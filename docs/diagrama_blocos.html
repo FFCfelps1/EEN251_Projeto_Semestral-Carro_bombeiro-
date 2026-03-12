@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagrama de Blocos — Carro Bombeiro Teleoprado</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --red:       #c0392b;
+      --red-dark:  #922b21;
+      --red-light: #e74c3c;
+      --bg:        #0f1117;
+      --bg2:       #181c24;
+      --bg3:       #1e2330;
+      --border:    #2e3650;
+      --text:      #dce3f0;
+      --muted:     #7a8aaa;
+      --accent:    #5b9cf6;
+      --green:     #27ae60;
+      --orange:    #e67e22;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, var(--red-dark) 0%, #1a0a0a 60%, var(--bg) 100%);
+      border-bottom: 2px solid var(--red);
+      padding: 2.5rem 2rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .header-icon {
+      font-size: 3.5rem;
+      filter: drop-shadow(0 0 12px #e74c3caa);
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: .5px;
+      color: #fff;
+    }
+    header p {
+      color: #e8a0a0;
+      font-size: .9rem;
+      margin-top: .25rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      border-radius: 4px;
+      font-size: .75rem;
+      padding: 2px 8px;
+      margin-right: .4rem;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── NAV / TOC ── */
+    nav {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    nav h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: .75rem; }
+    nav ol { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem .75rem; }
+    nav ol li a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: .9rem;
+      background: #1d2540;
+      border: 1px solid #2d3a60;
+      border-radius: 6px;
+      padding: 4px 12px;
+      transition: background .15s;
+    }
+    nav ol li a:hover { background: #2a3a70; }
+
+    /* ── SECTIONS ── */
+    section {
+      margin-bottom: 3rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      border-bottom: 2px solid var(--red);
+      padding-bottom: .6rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-num {
+      background: var(--red);
+      color: #fff;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    /* ── SYSTEM DIAGRAM (visual blocks) ── */
+    .sys-diagram {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 700px) { .sys-diagram { grid-template-columns: 1fr; } }
+
+    .subsystem {
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 2px solid;
+    }
+    .subsystem.tx {
+      background: #12191f;
+      border-color: #2980b9;
+    }
+    .subsystem.rx {
+      background: #181208;
+      border-color: var(--red);
+    }
+    .subsystem-title {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding: .35rem .75rem;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    .tx .subsystem-title  { background: #1a3a5c; color: #5fb3e8; }
+    .rx .subsystem-title  { background: #3a1515; color: var(--red-light); }
+
+    .block-row {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .block {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .55rem .85rem;
+      font-size: .88rem;
+    }
+    .block .icon { font-size: 1.1rem; width: 22px; text-align: center; flex-shrink: 0; }
+    .block .label { font-weight: 600; color: #c8d8f0; }
+    .block .sub   { font-size: .75rem; color: var(--muted); margin-left: auto; white-space: nowrap; }
+
+    .arrow-down {
+      text-align: center;
+      color: var(--muted);
+      font-size: .85rem;
+      margin: .1rem 0;
+    }
+
+    .rf-link {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: .75rem;
+      background: #1a1a2e;
+      border: 1px dashed #4a4a7a;
+      border-radius: 10px;
+      font-size: .85rem;
+      color: #8080c8;
+    }
+    .rf-link span { font-size: 1.4rem; }
+
+    /* ── MERMAID ── */
+    .mermaid-wrap {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem 1rem;
+      overflow-x: auto;
+    }
+    .mermaid { margin: auto; }
+
+    /* ── PACKET TABLE ── */
+    .packet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+    .packet-table th {
+      background: var(--red-dark);
+      color: #fff;
+      padding: .6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .packet-table td {
+      padding: .55rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .packet-table tr:nth-child(even) td { background: #13171f; }
+    .packet-table tr:last-child td { border-bottom: none; }
+    .byte-badge {
+      display: inline-block;
+      background: #2a1f3a;
+      color: #b39ddb;
+      border: 1px solid #5e35b1;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-family: monospace;
+      font-size: .85rem;
+      font-weight: 700;
+    }
+    .type-tag {
+      font-family: monospace;
+      font-size: .8rem;
+      color: var(--orange);
+    }
+
+    /* ── POWER DIAGRAM ── */
+    .power-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .power-node {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .power-node .voltage {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: .3rem;
+    }
+    .power-node .desc { font-size: .8rem; color: var(--muted); }
+    .power-node.bat  .voltage { color: var(--green); }
+    .power-node.reg  .voltage { color: var(--orange); }
+    .power-node.v5   .voltage { color: #f39c12; }
+    .power-node.v33  .voltage { color: var(--accent); }
+
+    .power-consumers {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+    .consumer-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .85rem;
+    }
+    .consumer-row .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ── PIN TABLE ── */
+    .pin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+    .pin-table th {
+      background: #1a2035;
+      color: var(--accent);
+      padding: .5rem .8rem;
+      text-align: left;
+      font-size: .77rem;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .pin-table td {
+      padding: .45rem .8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .pin-table tr:hover td { background: #161c2c; }
+    .pin-code {
+      font-family: monospace;
+      font-size: .83rem;
+      color: #a8c4ff;
+      background: #1a2040;
+      border-radius: 3px;
+      padding: 1px 5px;
+    }
+    .pin-pwm  { color: #f6c90e; font-size: .75rem; font-weight: 600; }
+    .pin-adc  { color: var(--green); font-size: .75rem; font-weight: 600; }
+    .pin-spi  { color: #e67e22; font-size: .75rem; font-weight: 600; }
+    .pin-gpio { color: var(--muted); font-size: .75rem; font-weight: 600; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: .8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-icon">🚒</div>
+  <div>
+    <div>
+      <span class="badge">EEN251</span>
+      <span class="badge">Projeto Semestral</span>
+      <span class="badge">2026</span>
+    </div>
+    <h1>Diagrama de Blocos — Carro Bombeiro Teleoprado</h1>
+    <p>Raspberry Pi Pico · NRF24L01 · 4WD · Mini Bomba d'água · Sensor de Nível</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TOC -->
+  <nav>
+    <h2>Índice</h2>
+    <ol>
+      <li><a href="#s1">1. Sistema Completo</a></li>
+      <li><a href="#s2">2. Subsistema TX</a></li>
+      <li><a href="#s3">3. Subsistema RX</a></li>
+      <li><a href="#s4">4. Estados do Firmware</a></li>
+      <li><a href="#s5">5. Pacote RF</a></li>
+      <li><a href="#s6">6. Pinagem</a></li>
+      <li><a href="#s7">7. Alimentação</a></li>
+    </ol>
+  </nav>
+
+  <!-- ── SEÇÃO 1 ── -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Diagrama do Sistema Completo</h2>
+    </div>
+
+    <div class="sys-diagram">
+
+      <!-- RF LINK (top row) -->
+      <div class="rf-link">
+        <span>📡</span>
+        <strong>RF 2,4 GHz — Enhanced ShockBurst (NRF24L01)</strong>
+        <span>≋≋≋≋≋≋≋≋≋≋≋</span>
+        <strong>~50 pacotes/s · 6 bytes · ACK automático</strong>
+        <span>📡</span>
+      </div>
+
+      <!-- TX -->
+      <div class="subsystem tx">
+        <div class="subsystem-title">📤 BLOCO TRANSMISSOR — Controle Remoto</div>
+        <div class="block-row">
+          <div class="block"><span class="icon">🔋</span><span class="label">Bateria LiPo 3,7V</span><span class="sub">alimentação</span></div>
+          <div class="arrow-down">▼</div>
+          <div class="block"><span class="icon">⚙️</span><span class="label">Raspberry Pi Pico TX</span><span class="sub">RP2040</span></div>
+          <div class="arrow-down">▲ entradas</div>
+          <div class="block"><span class="icon">🕹️</span><span class="label">Joystick Eixo X</span><span class="sub">ADC0 · GP26</span></div>
+          <div class="block"><span class="icon">🕹️</span><span class="label">Joystick Eixo Y</span><span class="sub">ADC1 · GP27</span></div>
+          <div class="block"><span class="icon">🔴</span><span class="label">Botão Bomba</span><span class="sub">GP14 pull-up</span></div>
+          <div class="block"><span class="icon">⛔</span><span class="label">Botão Stop / Emergência</span><span class="sub">GP15 pull-up</span></div>
+          <div class="arrow-down">▼ SPI0</div>
+          <div class="block"><span class="icon">📡</span><span class="label">NRF24L01</span><span class="sub">PTX mode</span></div>
+        </div>
+      </div>
+
+      <!-- RX -->
+      <div class="subsystem rx">
+        <div class="subsystem-title">📥 BLOCO RECEPTOR — Carro Bombeiro</div>
+        <div class="block-row">
+          <div class="block"><span class="icon">📡</span><span class="label">NRF24L01</span><span class="sub">PRX mode</span></div>
+          <div class="arrow-down">▼ SPI0 / IRQ</div>
+          <div class="block"><span class="icon">⚙️</span><span class="label">Raspberry Pi Pico RX</span><span class="sub">RP2040</span></div>
+          <div class="arrow-down">▼ PWM + GPIO</div>
+          <div class="block"><span class="icon">🔧</span><span class="label">L298N #1 — Lado Esquerdo</span><span class="sub">GP8–13</span></div>
+          <div class="block"><span class="icon">🔧</span><span class="label">L298N #2 — Lado Direito</span><span class="sub">GP16–21</span></div>
+          <div class="block"><span class="icon">⚙</span><span class="label">Motor 1 — Diant. Esq.</span><span class="sub"></span></div>
+          <div class="block"><span class="icon">⚙</span><span class="label">Motor 2 — Tras. Esq.</span><span class="sub"></span></div>
+          <div class="block"><span class="icon">⚙</span><span class="label">Motor 3 — Diant. Dir.</span><span class="sub"></span></div>
+          <div class="block"><span class="icon">⚙</span><span class="label">Motor 4 — Tras. Dir.</span><span class="sub"></span></div>
+          <div class="arrow-down">▼ GP22 / GP26 / GP27 / GP28</div>
+          <div class="block"><span class="icon">🔌</span><span class="label">Relé 5V</span><span class="sub">GP22</span></div>
+          <div class="block"><span class="icon">💧</span><span class="label">Mini Bomba d'água</span><span class="sub">3–6V DC</span></div>
+          <div class="block"><span class="icon">🪣</span><span class="label">Reservatório ~150 mL</span><span class="sub"></span></div>
+          <div class="block"><span class="icon">📊</span><span class="label">Sensor de Nível</span><span class="sub">ADC · GP26</span></div>
+          <div class="block"><span class="icon">💡</span><span class="label">LED Alerta</span><span class="sub">GP27</span></div>
+          <div class="block"><span class="icon">🔊</span><span class="label">Buzzer</span><span class="sub">GP28</span></div>
+          <div class="arrow-down">▲ 7,4V / 5V</div>
+          <div class="block"><span class="icon">⚡</span><span class="label">Regulador DC-DC 5V</span><span class="sub">MP1584</span></div>
+          <div class="block"><span class="icon">🔋</span><span class="label">Bateria 2S 7,4V</span><span class="sub">2000mAh</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 2 ── -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Subsistema Transmissor</h2>
+    </div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+graph TD
+    BAT_TX["🔋 Bateria LiPo\n3,7V"]
+    PICO_TX["⚙️ Raspberry Pi Pico TX\nRP2040"]
+    JOY_X["🕹️ Joystick — Eixo X\nADC0 / GP26"]
+    JOY_Y["🕹️ Joystick — Eixo Y\nADC1 / GP27"]
+    BTN1["🔴 Botão Bomba\nGP14 — pull-up"]
+    BTN2["⛔ Botão Stop/Emergência\nGP15 — pull-up"]
+    NRF_TX["📡 NRF24L01\nSPI0 PTX mode"]
+    RF["≋≋≋ RF 2,4 GHz ≋≋≋\nEnhanced ShockBurst"]
+
+    BAT_TX -->|"3,3V via Pico onboard"| PICO_TX
+    JOY_X -->|"ADC 0–3,3V"| PICO_TX
+    JOY_Y -->|"ADC 0–3,3V"| PICO_TX
+    BTN1 -->|"GPIO LOW = pressionado"| PICO_TX
+    BTN2 -->|"GPIO LOW = pressionado"| PICO_TX
+    PICO_TX -->|"SPI: SCK/MOSI/MISO/CS/CE"| NRF_TX
+    NRF_TX -->|"Pacote 6 bytes @ ~50Hz"| RF
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 3 ── -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Subsistema Receptor</h2>
+    </div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+graph TD
+    BAT_RX["🔋 Bateria 2S\n7,4V / 2000mAh"]
+    REG["⚡ Regulador DC-DC\n7,4V → 5V MP1584"]
+    PICO_RX["⚙️ Raspberry Pi Pico RX\nRP2040"]
+    RF_IN["≋≋≋ RF 2,4 GHz ≋≋≋"]
+    NRF_RX["📡 NRF24L01\nSPI0 PRX mode"]
+    L298N_A["🔧 L298N 1\nLado Esquerdo"]
+    L298N_B["🔧 L298N 2\nLado Direito"]
+    M1["⚙ Motor 1\nDianteiro Esq."]
+    M2["⚙ Motor 2\nTraseiro Esq."]
+    M3["⚙ Motor 3\nDianteiro Dir."]
+    M4["⚙ Motor 4\nTraseiro Dir."]
+    RELAY["🔌 Relé 5V\n1 canal"]
+    PUMP["💧 Mini Bomba d'água\n3–6V DC"]
+    RESERV["🪣 Reservatório\n~150 mL"]
+    SENSOR["📊 Sensor de Nível\nADC / GP26"]
+    LED["💡 LED Vermelho\nAlerta Nível Baixo"]
+    BUZZ["🔊 Buzzer\nAlerta Sonoro"]
+
+    BAT_RX -->|"7,4V"| REG
+    REG -->|"5V"| L298N_A
+    REG -->|"5V"| L298N_B
+    REG -->|"5V"| RELAY
+    REG -->|"3,3V via Pico VSYS"| PICO_RX
+
+    RF_IN -->|"pacote recebido"| NRF_RX
+    NRF_RX -->|"SPI + IRQ"| PICO_RX
+
+    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_A
+    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_B
+    L298N_A --> M1
+    L298N_A --> M2
+    L298N_B --> M3
+    L298N_B --> M4
+
+    PICO_RX -->|"GPIO HIGH/LOW"| RELAY
+    RELAY -->|"5V chaveado"| PUMP
+    PUMP -->|"pressuriza"| RESERV
+    RESERV -->|"contato elétrico"| SENSOR
+    SENSOR -->|"tensão analógica"| PICO_RX
+
+    PICO_RX -->|"GPIO OUT"| LED
+    PICO_RX -->|"GPIO OUT"| BUZZ
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 4 ── -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Diagrama de Estados — Firmware do Receptor</h2>
+    </div>
+    <div class="mermaid-wrap">
+      <div class="mermaid">
+stateDiagram-v2
+    [*] --> INICIALIZANDO
+
+    INICIALIZANDO --> AGUARDANDO_RF : configuração concluída
+
+    AGUARDANDO_RF --> RECEBENDO_PACOTE : IRQ NRF24L01
+    AGUARDANDO_RF --> FAILSAFE : timeout > 500ms
+
+    RECEBENDO_PACOTE --> STOP_STATE : stop == 1
+    RECEBENDO_PACOTE --> MOVENDO : stop == 0
+
+    MOVENDO --> BOMBA_ON : bomba == 1
+    MOVENDO --> BOMBA_OFF : bomba == 0
+    BOMBA_ON --> AGUARDANDO_RF
+    BOMBA_OFF --> AGUARDANDO_RF
+
+    STOP_STATE --> AGUARDANDO_RF
+
+    FAILSAFE --> AGUARDANDO_RF : pacote válido recebido
+
+    note right of FAILSAFE
+        Todos os motores parados
+        Bomba desligada
+        LED piscando
+    end note
+
+    note right of MOVENDO
+        PWM aplicado nos L298N
+        Velocidade diferencial
+        por lado (tank drive)
+    end note
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 5 ── -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Estrutura do Pacote RF</h2>
+    </div>
+    <div class="card">
+      <div class="card-title">6 bytes · payload estático · NRF24L01 Enhanced ShockBurst · ~50 pacotes/s</div>
+      <table class="packet-table">
+        <thead>
+          <tr>
+            <th>Byte</th>
+            <th>Campo</th>
+            <th>Tipo</th>
+            <th>Faixa</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="byte-badge">0</span></td>
+            <td><code>vel_esq</code></td>
+            <td><span class="type-tag">int8</span></td>
+            <td>−100 … +100</td>
+            <td>Velocidade lado esquerdo (negativo = ré)</td>
+          </tr>
+          <tr>
+            <td><span class="byte-badge">1</span></td>
+            <td><code>vel_dir</code></td>
+            <td><span class="type-tag">int8</span></td>
+            <td>−100 … +100</td>
+            <td>Velocidade lado direito (negativo = ré)</td>
+          </tr>
+          <tr>
+            <td><span class="byte-badge">2</span></td>
+            <td><code>bomba</code></td>
+            <td><span class="type-tag">uint8</span></td>
+            <td>0 / 1</td>
+            <td>0 = OFF · 1 = Bomba d'água ligada</td>
+          </tr>
+          <tr>
+            <td><span class="byte-badge">3</span></td>
+            <td><code>stop</code></td>
+            <td><span class="type-tag">uint8</span></td>
+            <td>0 / 1</td>
+            <td>0 = operação normal · 1 = parada de emergência</td>
+          </tr>
+          <tr>
+            <td><span class="byte-badge">4</span></td>
+            <td><code>—</code></td>
+            <td><span class="type-tag">uint8</span></td>
+            <td>—</td>
+            <td>Reservado / expansão futura</td>
+          </tr>
+          <tr>
+            <td><span class="byte-badge">5</span></td>
+            <td><code>—</code></td>
+            <td><span class="type-tag">uint8</span></td>
+            <td>—</td>
+            <td>Reservado / expansão futura</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Mapeamento Tank Drive — Joystick → Velocidade Diferencial</div>
+      <div style="font-family:monospace; font-size:.9rem; color:#c8d8f0; line-height:2;">
+        <span style="color:var(--orange)">vel_esq</span> = Y + X<br>
+        <span style="color:var(--accent)">vel_dir</span> = Y − X<br>
+        <span style="color:var(--muted)">// Y = eixo vertical (avanço/recuo), X = eixo horizontal (giro)</span><br>
+        <span style="color:var(--muted)">// Valores limitados ao intervalo [−100, +100] antes do envio</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 6 ── -->
+  <section id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Pinagem — Raspberry Pi Pico</h2>
+    </div>
+
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">Receptor (Pico RX) — Carro Bombeiro</div>
+      <table class="pin-table">
+        <thead>
+          <tr><th>Pino</th><th>GPIO</th><th>Periférico</th><th>Tipo</th><th>Descrição</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="pin-code">GP2</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
+          <tr><td><span class="pin-code">GP3</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
+          <tr><td><span class="pin-code">GP4</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
+          <tr><td><span class="pin-code">GP5</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
+          <tr><td><span class="pin-code">GP6</span></td><td>9</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
+          <tr><td><span class="pin-code">GP8</span></td><td>11</td><td>L298N #1</td><td><span class="pin-pwm">PWM</span></td><td>ENA — velocidade Motor 1</td></tr>
+          <tr><td><span class="pin-code">GP9</span></td><td>12</td><td>L298N #1</td><td><span class="pin-pwm">PWM</span></td><td>ENB — velocidade Motor 2</td></tr>
+          <tr><td><span class="pin-code">GP10</span></td><td>14</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN1 — direção Motor 1</td></tr>
+          <tr><td><span class="pin-code">GP11</span></td><td>15</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN2 — direção Motor 1</td></tr>
+          <tr><td><span class="pin-code">GP12</span></td><td>16</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN3 — direção Motor 2</td></tr>
+          <tr><td><span class="pin-code">GP13</span></td><td>17</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN4 — direção Motor 2</td></tr>
+          <tr><td><span class="pin-code">GP16</span></td><td>21</td><td>L298N #2</td><td><span class="pin-pwm">PWM</span></td><td>ENA — velocidade Motor 3</td></tr>
+          <tr><td><span class="pin-code">GP17</span></td><td>22</td><td>L298N #2</td><td><span class="pin-pwm">PWM</span></td><td>ENB — velocidade Motor 4</td></tr>
+          <tr><td><span class="pin-code">GP18</span></td><td>24</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN1 — direção Motor 3</td></tr>
+          <tr><td><span class="pin-code">GP19</span></td><td>25</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN2 — direção Motor 3</td></tr>
+          <tr><td><span class="pin-code">GP20</span></td><td>26</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN3 — direção Motor 4</td></tr>
+          <tr><td><span class="pin-code">GP21</span></td><td>27</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN4 — direção Motor 4</td></tr>
+          <tr><td><span class="pin-code">GP22</span></td><td>29</td><td>Relé 5V</td><td><span class="pin-gpio">GPIO</span></td><td>Sinal de controle da bomba</td></tr>
+          <tr><td><span class="pin-code">GP26</span></td><td>31</td><td>Sensor Nível</td><td><span class="pin-adc">ADC0</span></td><td>Leitura de nível do reservatório</td></tr>
+          <tr><td><span class="pin-code">GP27</span></td><td>32</td><td>LED alerta</td><td><span class="pin-gpio">GPIO</span></td><td>Indicador nível baixo</td></tr>
+          <tr><td><span class="pin-code">GP28</span></td><td>34</td><td>Buzzer</td><td><span class="pin-gpio">GPIO</span></td><td>Alerta sonoro</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Transmissor (Pico TX) — Controle Remoto</div>
+      <table class="pin-table">
+        <thead>
+          <tr><th>Pino</th><th>GPIO</th><th>Periférico</th><th>Tipo</th><th>Descrição</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="pin-code">GP2</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
+          <tr><td><span class="pin-code">GP3</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
+          <tr><td><span class="pin-code">GP4</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
+          <tr><td><span class="pin-code">GP5</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
+          <tr><td><span class="pin-code">GP6</span></td><td>9</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
+          <tr><td><span class="pin-code">GP14</span></td><td>19</td><td>Botão Bomba</td><td><span class="pin-gpio">GPIO IN</span></td><td>Pull-up interno — LOW = pressionado</td></tr>
+          <tr><td><span class="pin-code">GP15</span></td><td>20</td><td>Botão Stop</td><td><span class="pin-gpio">GPIO IN</span></td><td>Pull-up interno — LOW = pressionado</td></tr>
+          <tr><td><span class="pin-code">GP26</span></td><td>31</td><td>Joystick X</td><td><span class="pin-adc">ADC0</span></td><td>Eixo horizontal (esquerda/direita)</td></tr>
+          <tr><td><span class="pin-code">GP27</span></td><td>32</td><td>Joystick Y</td><td><span class="pin-adc">ADC1</span></td><td>Eixo vertical (avanço/recuo)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SEÇÃO 7 ── -->
+  <section id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Diagrama de Alimentação</h2>
+    </div>
+
+    <div class="power-grid" style="margin-bottom:1rem">
+      <div class="power-node bat">
+        <div class="voltage">7,4V</div>
+        <div>Bateria 2S 18650</div>
+        <div class="desc">~2000 mAh · corrente pico ~4A</div>
+      </div>
+      <div class="power-node reg">
+        <div class="voltage">→ DC-DC</div>
+        <div>Regulador MP1584</div>
+        <div class="desc">Buck converter · eficiência >90%</div>
+      </div>
+      <div class="power-node v5">
+        <div class="voltage">5V</div>
+        <div>Saída regulada</div>
+        <div class="desc">L298N, Relé, Pico VSYS</div>
+      </div>
+      <div class="power-node v33">
+        <div class="voltage">3,3V</div>
+        <div>Saída interna Pico</div>
+        <div class="desc">NRF24L01, sensores, GPIOs</div>
+      </div>
+    </div>
+
+    <div class="power-consumers">
+      <div class="card-title">Distribuição de consumidores por tensão</div>
+      <div class="consumer-row"><span class="dot" style="background:#f39c12"></span><strong>7,4V direto →</strong>&nbsp;&nbsp;L298N #1 (pino VS) · L298N #2 (pino VS) — alimentação dos motores</div>
+      <div class="consumer-row"><span class="dot" style="background:#e67e22"></span><strong>5V regulado →</strong>&nbsp;&nbsp;&nbsp;L298N #1 (VCC lógico) · L298N #2 (VCC lógico) · Relé 5V (bobina) · Pico (VSYS)</div>
+      <div class="consumer-row"><span class="dot" style="background:var(--accent)"></span><strong>3,3V (Pico) →</strong>&nbsp;&nbsp;NRF24L01 VCC · Sensor de nível · LEDs · Buzzer</div>
+      <div class="consumer-row"><span class="dot" style="background:#e74c3c"></span><strong>⚠ Atenção →</strong>&nbsp;&nbsp;&nbsp;NRF24L01 opera em 3,3V — nunca conectar ao pino 5V</div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  EEN251 — Projeto Semestral · Carro Bombeiro Teleoprado · 11 de março de 2026
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e2330',
+      primaryBorderColor: '#3a4a6a',
+      primaryTextColor: '#dce3f0',
+      lineColor: '#5b9cf6',
+      background: '#181c24',
+      mainBkg: '#1e2330',
+      nodeBorder: '#3a4a6a',
+      clusterBkg: '#13171f',
+      titleColor: '#fff',
+      edgeLabelBackground: '#13171f',
+      stateBkg: '#1e2330',
+      stateLabelColor: '#dce3f0',
+      transitionColor: '#5b9cf6',
+    }
+  });
+</script>
+</body>
+</html>
