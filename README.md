@@ -1,4 +1,4 @@
-# EEN251 — Projeto Semestral: Carro de Bombeiro Teleoprado
+# 🚒 EEN251 — Carro de Bombeiro Teleoprado
 
 > **Disciplina:** EEN251 — Projeto Integrador de Sistemas Embarcados  
 > **Semestre:** 1º Semestre / 2026  
@@ -11,15 +11,18 @@
 1. [Integrantes e Responsabilidades](#1-integrantes-e-responsabilidades)
 2. [Descrição Geral do Projeto](#2-descrição-geral-do-projeto)
 3. [Objetivos](#3-objetivos)
-4. [Materiais e Componentes](#4-materiais-e-componentes)
-5. [Arquitetura do Sistema](#5-arquitetura-do-sistema)
-6. [Diagrama de Blocos](#6-diagrama-de-blocos)
+4. [Estrutura do Repositório](#4-estrutura-do-repositório)
+5. [Materiais e Componentes](#5-materiais-e-componentes)
+6. [Arquitetura do Sistema](#6-arquitetura-do-sistema)
 7. [Pinagem e Conexões](#7-pinagem-e-conexões)
 8. [Firmware — Descrição e Fluxograma de Estados](#8-firmware--descrição-e-fluxograma-de-estados)
-9. [Cronograma](#9-cronograma)
-10. [Orçamento Total Estimado](#10-orçamento-total-estimado)
-11. [Riscos e Limitações](#11-riscos-e-limitações)
-12. [Referências Bibliográficas](#12-referências-bibliográficas)
+9. [Como Executar](#9-como-executar)
+10. [Convenção de Commits](#10-convenção-de-commits)
+11. [Política de Tags e Versões](#11-política-de-tags-e-versões)
+12. [Cronograma](#12-cronograma)
+13. [Orçamento Total Estimado](#13-orçamento-total-estimado)
+14. [Riscos e Limitações](#14-riscos-e-limitações)
+15. [Referências Bibliográficas](#15-referências-bibliográficas)
 
 ---
 
@@ -45,7 +48,7 @@ O sistema é dividido em dois blocos principais:
 - **Transmissor (controle remoto):** baseado em um Raspberry Pi Pico com joystick analógico e botões, responsável por capturar os comandos do operador e enviá-los via NRF24L01.
 - **Receptor (carro):** baseado em um segundo Raspberry Pi Pico que recebe os pacotes RF, interpreta os comandos e aciona os motores, a bomba e os alertas de nível.
 
-Todo o firmware é desenvolvido em MicroPython, aproveitando a plataforma Raspberry Pi Pico (microcontrolador RP2040) como base de hardware.
+Todo o firmware é desenvolvido em **MicroPython**, aproveitando a plataforma Raspberry Pi Pico (microcontrolador RP2040).
 
 ---
 
@@ -58,14 +61,40 @@ Projetar, construir e programar um carro de bombeiro em miniatura, teleoprado po
 ### 3.2 Objetivos Específicos
 
 - Implementar comunicação bidirecional RF 2.4 GHz entre controle e veículo utilizando o módulo NRF24L01.
-- Controlar a velocidade e direção de quatro motores DC via PWM, permitindo manobras de avanço, recuo e curva (diferencial de velocidade entre lados).
+- Controlar a velocidade e direção de quatro motores DC via PWM (diferencial de velocidade — tank drive).
 - Acionar remotamente uma mini bomba d'água via relé para simular o combate a incêndios.
-- Monitorar em tempo real o nível do reservatório de água por meio de sensor capacitivo/resistivo, com alertas visuais (LED) e sonoros (buzzer) ao operador.
-- Documentar todo o processo de desenvolvimento, desde o design de hardware até a validação do sistema integrado.
+- Monitorar em tempo real o nível do reservatório de água, com alertas visuais (LED) e sonoros (buzzer).
+- Documentar todo o processo de desenvolvimento: hardware, firmware e validação do sistema.
 
 ---
 
-## 4. Materiais e Componentes
+## 4. Estrutura do Repositório
+
+```
+EEN251_Projeto_Semestral(Carro_bombeiro)/
+│
+├── docs/                        # Documentação HTML do projeto
+│   ├── index.html               # Página principal (abas: Requisitos + Diagramas)
+│   ├── diagrama_blocos.html     # Diagrama de blocos standalone (legado)
+│   └── diagrama_blocos.md       # Diagrama de blocos em Markdown
+│
+├── firmware/                    # Código MicroPython (a ser criado)
+│   ├── tx/                      # Firmware do transmissor (Pico TX)
+│   │   └── main.py
+│   └── rx/                      # Firmware do receptor (Pico RX)
+│       └── main.py
+│
+├── hardware/                    # Arquivos de hardware (a ser criado)
+│   ├── esquematico.pdf
+│   └── lista_materiais.csv
+│
+├── index.html                   # Redirecionamento para docs/index.html
+└── README.md                    # Este arquivo
+```
+
+---
+
+## 5. Materiais e Componentes
 
 | Qtd | Componente | Finalidade | Preço Est. (R$) |
 |-----|-----------|-----------|:--------------:|
@@ -79,258 +108,276 @@ Projetar, construir e programar um carro de bombeiro em miniatura, teleoprado po
 | 1 | Chassi 4WD em acrílico ou MDF | Estrutura física do veículo | 45,00 |
 | 1 | Bateria LiPo 3,7 V 1000 mAh (18650) | Alimentação do transmissor | 25,00 |
 | 1 | Pack 2S 18650 (7,4 V ~2000 mAh) | Alimentação principal do carro | 40,00 |
-| 1 | Módulo redutor DC-DC (MP1584 ou LM2596) | Regular 7,4 V → 5 V para periféricos | 8,00 |
+| 1 | Módulo redutor DC-DC (MP1584 ou LM2596) | Regular 7,4 V → 5 V | 8,00 |
 | 1 | Joystick analógico duplo eixo (KY-023) | Controle direcional (X/Y) | 12,00 |
 | 2 | Push button (6 mm) | Ativar bomba / parada de emergência | 1,00 cada |
-| 1 | Reservatório plástico (aprox. 100–200 mL) | Tanque de água do caminhão | 10,00 |
+| 1 | Reservatório plástico (~100–200 mL) | Tanque de água do caminhão | 10,00 |
 | 1 | Protoboard ou PCB de prototipagem | Prototipagem do circuito | 15,00 |
 | — | Jumpers, fios, resistores, LEDs, buzzer, suportes | Conexões e indicadores | 20,00 |
 
----
-
-## 5. Arquitetura do Sistema
-
-O sistema é composto por dois subsistemas independentes que se comunicam exclusivamente via RF:
-
-**Subsistema Transmissor** — opera de forma autônoma lendo os sensores de entrada (joystick e botões), convertendo-os em pacotes de dados e transmitindo-os pelo NRF24L01 em modo PTX (*Primary TX*). O Pico TX fica em loop contínuo lendo ADC e GPIO, monta o pacote e envia a cada ~20 ms (~50 Hz de atualização).
-
-**Subsistema Receptor** — o Pico RX opera em modo PRX (*Primary RX*), aguardando pacotes. Ao receber um pacote válido, decodifica os campos (velocidade_esquerda, velocidade_direita, bomba_on) e aciona os respectivos periféricos via PWM (motores) e GPIO digital (relé). Em paralelo, a leitura do sensor de nível é feita periodicamente pelo ADC, e alertas são acionados se o nível cair abaixo de um limiar pré-definido.
-
-A comunicação RF utiliza protocolo `Enhanced ShockBurst` nativo do NRF24L01, com confirmação automática de recebimento (ACK), minimizando a necessidade de tratamento de erros no firmware.
+**Total estimado: R$ 362,00**
 
 ---
 
-## 6. Diagrama de Blocos
-
-### 6.1 Visão Geral do Sistema
-
-```mermaid
-graph LR
-    subgraph TX["BLOCO TRANSMISSOR — Controle Remoto"]
-        direction TB
-        BAT_TX["Bateria\n3,7V LiPo"]
-        PICO_TX["Raspberry Pi Pico\n(Controlador TX)"]
-        JOY["Joystick Analógico\n(ADC X / Y)"]
-        BTN_PUMP["Botão\nAtivar Bomba"]
-        BTN_STOP["Botão\nStop / Emergência"]
-        NRF_TX["Módulo NRF24L01\n(SPI — PTX)"]
-
-        BAT_TX --> PICO_TX
-        JOY -->|ADC| PICO_TX
-        BTN_PUMP -->|GPIO| PICO_TX
-        BTN_STOP -->|GPIO| PICO_TX
-        PICO_TX -->|SPI| NRF_TX
-    end
-
-    subgraph RX["BLOCO RECEPTOR — Carro Bombeiro"]
-        direction TB
-        BAT_RX["Bateria\n7,4V 2S"]
-        REG["Regulador DC-DC\n7,4V → 5V / 3,3V"]
-        PICO_RX["Raspberry Pi Pico\n(Controlador RX)"]
-        NRF_RX["Módulo NRF24L01\n(SPI — PRX)"]
-        L298N_A["L298N #1\n(lado esquerdo)"]
-        L298N_B["L298N #2\n(lado direito)"]
-        M1["Motor 1\n(Diant. Esq.)"]
-        M2["Motor 2\n(Tras. Esq.)"]
-        M3["Motor 3\n(Diant. Dir.)"]
-        M4["Motor 4\n(Tras. Dir.)"]
-        RELAY["Relé 5V"]
-        PUMP["Mini Bomba\nd'água"]
-        RESERV["Reservatório\nd'água"]
-        SENSOR["Sensor de Nível\n(ADC)"]
-        LED["LED\nAlerta"]
-        BUZZ["Buzzer\nAlerta"]
-
-        BAT_RX --> REG
-        REG -->|5V| L298N_A
-        REG -->|5V| L298N_B
-        REG -->|5V| RELAY
-        REG -->|3,3V| PICO_RX
-        NRF_RX -->|SPI| PICO_RX
-        PICO_RX -->|PWM + GPIO| L298N_A
-        PICO_RX -->|PWM + GPIO| L298N_B
-        L298N_A --> M1
-        L298N_A --> M2
-        L298N_B --> M3
-        L298N_B --> M4
-        PICO_RX -->|GPIO| RELAY
-        RELAY --> PUMP
-        PUMP -->|pressuriza| RESERV
-        RESERV -->|nível| SENSOR
-        SENSOR -->|ADC| PICO_RX
-        PICO_RX -->|GPIO| LED
-        PICO_RX -->|GPIO| BUZZ
-    end
-
-    NRF_TX -->|"RF 2,4 GHz\n(Enhanced ShockBurst)"| NRF_RX
-```
-
-### 6.2 Fluxo de Comunicação RF
+## 6. Arquitetura do Sistema
 
 ```
 [Joystick X/Y + Botões]
-        |
-        v
-  Pico TX: leitura ADC/GPIO (20 ms)
-        |
-        v
-  Monta pacote: { vel_esq, vel_dir, bomba }  (6 bytes)
-        |
-        v
-  NRF24L01 TX  ----[ RF 2,4 GHz ]---->  NRF24L01 RX
-                                               |
-                                               v
-                                   Pico RX: decodifica pacote
-                                               |
-                          +--------------------+--------------------+
-                          |                    |                    |
-                          v                    v                    v
-                   PWM L298N #1        PWM L298N #2           GPIO Relé
-                  (Motor 1 e 2)       (Motor 3 e 4)           (Bomba)
+        │
+        ▼
+  Pico TX — leitura ADC/GPIO (~20 ms)
+        │
+        ▼
+  Monta pacote: { vel_esq, vel_dir, bomba, stop }  (6 bytes)
+        │
+        ▼
+  NRF24L01 TX ──[ RF 2,4 GHz · Enhanced ShockBurst ]──▶ NRF24L01 RX
+                                                               │
+                                               Pico RX — decodifica pacote
+                                                               │
+                              ┌────────────────┬──────────────┘
+                              ▼                ▼              ▼
+                       L298N #1           L298N #2        GPIO Relé
+                    (Motor 1 e 2)       (Motor 3 e 4)     (Bomba)
 ```
+
+**Mapeamento Tank Drive:**
+```
+vel_esq = Y + X
+vel_dir = Y − X
+```
+Onde Y = eixo vertical (avanço/recuo) e X = eixo horizontal (giro). Valores limitados a [−100, +100].
 
 ---
 
 ## 7. Pinagem e Conexões
 
-### 7.1 Receptor — Raspberry Pi Pico (RX)
+### Receptor — Raspberry Pi Pico (RX)
 
-| Pino (nome) | GPIO | Periférico | Sinal | Observações |
-|-------------|:----:|-----------|-------|-------------|
+| Pino | GPIO | Periférico | Sinal | Obs. |
+|------|:----:|-----------|-------|------|
 | GP2 | 4 | NRF24L01 | SCK (SPI0) | Clock SPI |
 | GP3 | 5 | NRF24L01 | MOSI (SPI0) | Dados saída |
 | GP4 | 6 | NRF24L01 | MISO (SPI0) | Dados entrada |
 | GP5 | 7 | NRF24L01 | CSn | Chip Select |
 | GP6 | 9 | NRF24L01 | CE | Chip Enable |
-| GP8 | 11 | L298N #1 | ENA (PWM) | Velocidade Motor 1 |
-| GP9 | 12 | L298N #1 | ENB (PWM) | Velocidade Motor 2 |
-| GP10 | 14 | L298N #1 | IN1 | Direção Motor 1 |
-| GP11 | 15 | L298N #1 | IN2 | Direção Motor 1 |
-| GP12 | 16 | L298N #1 | IN3 | Direção Motor 2 |
-| GP13 | 17 | L298N #1 | IN4 | Direção Motor 2 |
-| GP16 | 21 | L298N #2 | ENA (PWM) | Velocidade Motor 3 |
-| GP17 | 22 | L298N #2 | ENB (PWM) | Velocidade Motor 4 |
-| GP18 | 24 | L298N #2 | IN1 | Direção Motor 3 |
-| GP19 | 25 | L298N #2 | IN2 | Direção Motor 3 |
-| GP20 | 26 | L298N #2 | IN3 | Direção Motor 4 |
-| GP21 | 27 | L298N #2 | IN4 | Direção Motor 4 |
-| GP22 | 29 | Relé 5V | Sinal de controle | Ativa bomba d'água |
-| GP26 | 31 | Sensor de nível | ADC0 | Leitura analógica |
+| GP8 | 11 | L298N #1 | ENA (PWM) | Vel. Motor 1 |
+| GP9 | 12 | L298N #1 | ENB (PWM) | Vel. Motor 2 |
+| GP10–GP13 | 14–17 | L298N #1 | IN1–IN4 | Direção Motores 1/2 |
+| GP16 | 21 | L298N #2 | ENA (PWM) | Vel. Motor 3 |
+| GP17 | 22 | L298N #2 | ENB (PWM) | Vel. Motor 4 |
+| GP18–GP21 | 24–27 | L298N #2 | IN1–IN4 | Direção Motores 3/4 |
+| GP22 | 29 | Relé 5V | Sinal | Ativa bomba |
+| GP26 | 31 | Sensor nível | ADC0 | Leitura analógica |
 | GP27 | 32 | LED alerta | GPIO OUT | Nível baixo |
 | GP28 | 34 | Buzzer | GPIO OUT | Alerta sonoro |
-| 3V3(OUT) | 36 | NRF24L01 | VCC | 3,3V — **não usar 5V** |
-| GND | 38 | Comum | GND | |
 
-### 7.2 Transmissor — Raspberry Pi Pico (TX)
+### Transmissor — Raspberry Pi Pico (TX)
 
-| Pino (nome) | GPIO | Periférico | Sinal | Observações |
-|-------------|:----:|-----------|-------|-------------|
-| GP2 | 4 | NRF24L01 | SCK (SPI0) | |
-| GP3 | 5 | NRF24L01 | MOSI (SPI0) | |
-| GP4 | 6 | NRF24L01 | MISO (SPI0) | |
-| GP5 | 7 | NRF24L01 | CSn | |
-| GP6 | 9 | NRF24L01 | CE | |
+| Pino | GPIO | Periférico | Sinal | Obs. |
+|------|:----:|-----------|-------|------|
+| GP2–GP6 | 4–9 | NRF24L01 | SPI0 + CE/CSn | Igual ao RX |
 | GP14 | 19 | Botão Bomba | GPIO IN | Pull-up interno |
 | GP15 | 20 | Botão Stop | GPIO IN | Pull-up interno |
 | GP26 | 31 | Joystick X | ADC0 | Eixo horizontal |
 | GP27 | 32 | Joystick Y | ADC1 | Eixo vertical |
-| 3V3(OUT) | 36 | NRF24L01 | VCC | |
-| GND | 38 | Comum | GND | |
 
-> **Nota:** O NRF24L01 opera em 3,3 V. Os pinos GPIO do Raspberry Pi Pico também operam em 3,3 V — compatibilidade direta, sem necessidade de divisor de tensão.
+> ⚠️ **Atenção:** O NRF24L01 opera em **3,3 V**. Nunca conecte o VCC ao pino 5V.
 
 ---
 
 ## 8. Firmware — Descrição e Fluxograma de Estados
 
-### 8.1 Transmissor (Pico TX)
+### Transmissor (Pico TX) — loop de ~20 ms
+1. Lê ADC do joystick (0–65535) → mapeia para −100…+100 com zona morta central.
+2. Lê botões (pull-up; 0 = pressionado).
+3. Calcula `vel_esq` e `vel_dir` (tank drive).
+4. Monta pacote de 6 bytes e transmite via NRF24L01 PTX com ACK.
 
-O firmware do transmissor opera em loop contínuo com período de ~20 ms:
-
-1. Lê os valores analógicos do joystick (ADC0 e ADC1), mapeando a faixa 0–65535 para –100 a +100 (porcentagem de velocidade).
-2. Aplica uma zona morta central (deadzone) para evitar movimento indesejado quando o joystick está na posição de repouso.
-3. Lê o estado dos botões (pull-up interno; nível lógico 0 = pressionado).
-4. Calcula os valores de velocidade para o lado esquerdo e direito com base no mapeamento *tank drive* (Y = avanço/recuo, X = giro).
-5. Monta o pacote de 6 bytes: `[ vel_esq (int8), vel_dir (int8), bomba (uint8), stop (uint8), reservado, reservado ]`.
-6. Transmite o pacote via NRF24L01 em modo PTX com ACK habilitado.
-
-### 8.2 Receptor (Pico RX)
-
-O firmware do receptor opera com duas tarefas cooperativas:
-
-- **Tarefa RF (alta prioridade):** aguarda interrupção do NRF24L01 indicando pacote disponível. Ao receber, decodifica os campos e aplica imediatamente os comandos de PWM nos L298N e o sinal no relé.
-- **Tarefa Sensor (baixa prioridade):** lê o ADC do sensor de nível a cada 500 ms. Se o valor lido estiver abaixo do limiar configurado, aciona LED e buzzer.
-- **Watchdog:** se nenhum pacote RF válido for recebido em 500 ms, todos os motores são desligados (failsafe).
-
-### 8.3 Fluxograma do Firmware — Receptor
-
-```mermaid
-flowchart TD
-    START([Inicialização]) --> INIT["Configurar:\n- SPI (NRF24L01)\n- GPIO (L298N, Relé, LED, Buzzer)\n- ADC (Sensor Nível)\n- PWM (ENA/ENB L298N)"]
-    INIT --> PRX["Habilitar NRF24L01\nem modo PRX"]
-    PRX --> LOOP["Loop Principal"]
-
-    LOOP --> RX_CHECK{"Pacote RF\ndisponível?"}
-
-    RX_CHECK -->|"Sim"| PARSE["Decodificar pacote:\nvel_esq, vel_dir, bomba, stop"]
-    PARSE --> STOP_CHECK{"stop == 1?"}
-    STOP_CHECK -->|"Sim"| STOP_ALL["Parar todos os motores\nDesligar bomba"]
-    STOP_CHECK -->|"Não"| APPLY_MOT["Aplicar PWM nos\nL298N #1 e #2"]
-    APPLY_MOT --> PUMP_CHECK{"bomba == 1?"}
-    PUMP_CHECK -->|"Sim"| RELAY_ON["Ligar relé\n(bomba ativa)"]
-    PUMP_CHECK -->|"Não"| RELAY_OFF["Desligar relé\n(bomba inativa)"]
-    RELAY_ON --> RESET_WDT["Resetar watchdog"]
-    RELAY_OFF --> RESET_WDT
-    STOP_ALL --> RESET_WDT
-
-    RX_CHECK -->|"Não"| WDT_CHECK{"Timeout\n> 500 ms?"}
-    WDT_CHECK -->|"Sim"| FAILSAFE["FAILSAFE:\nParar motores\nDesligar bomba"]
-    WDT_CHECK -->|"Não"| LEVEL_TASK
-
-    RESET_WDT --> LEVEL_TASK
-
-    FAILSAFE --> LEVEL_TASK
-
-    LEVEL_TASK{"Tempo sensor\n>= 500 ms?"}
-    LEVEL_TASK -->|"Não"| LOOP
-    LEVEL_TASK -->|"Sim"| READ_ADC["Ler ADC\n(Sensor de nível)"]
-    READ_ADC --> LEVEL_CHECK{"Nível <\nlimiar?"}
-    LEVEL_CHECK -->|"Sim"| ALERT_ON["Acionar LED\ne Buzzer"]
-    LEVEL_CHECK -->|"Não"| ALERT_OFF["Desligar LED\ne Buzzer"]
-    ALERT_ON --> LOOP
-    ALERT_OFF --> LOOP
-```
-
-### 8.4 Mapeamento Tank Drive
-
-A conversão do joystick analógico para velocidade diferencial dos motores segue o modelo *tank drive*:
-
-```
-vel_esq = Y + X
-vel_dir = Y − X
-```
-
-Onde Y representa o eixo de avanço/recuo e X o eixo de rotação. Os valores são limitados ao intervalo [−100, +100] e convertidos para duty cycle PWM (0–65535 no RP2040).
+### Receptor (Pico RX) — duas tarefas cooperativas
+- **Tarefa RF (alta prioridade):** aguarda IRQ do NRF24L01, decodifica campos e aplica PWM/GPIO imediatamente.
+- **Tarefa Sensor (baixa prioridade):** lê ADC do sensor de nível a cada 500 ms; aciona LED e buzzer se abaixo do limiar.
+- **Watchdog:** desliga todos os motores e bomba se nenhum pacote válido chegar em 500 ms (failsafe).
 
 ---
 
-## 9. Cronograma
+## 9. Como Executar
+
+### Pré-requisitos
+- [Thonny IDE](https://thonny.org/) ou qualquer cliente MicroPython para RP2040
+- MicroPython >= 1.22 gravado nos dois Raspberry Pi Pico
+- Biblioteca [`nrf24l01`](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/radio/nrf24l01) copiada para ambos os Picos
+
+### Passos
+```bash
+# 1. Clone o repositório
+git clone https://github.com/<usuario>/EEN251_Projeto_Semestral.git
+
+# 2. Grave o firmware no Pico TX
+# Abra firmware/tx/main.py no Thonny e execute no dispositivo
+
+# 3. Grave o firmware no Pico RX
+# Abra firmware/rx/main.py no Thonny e execute no dispositivo
+
+# 4. Visualize a documentação
+# Abra docs/index.html em qualquer navegador
+```
+
+---
+
+## 10. Convenção de Commits
+
+Este projeto adota o padrão **[Conventional Commits](https://www.conventionalcommits.org/)** para manter um histórico claro e geração automática de changelogs.
+
+### Formato
+
+```
+<tipo>(<escopo>): <descrição curta>
+
+[corpo opcional — explica o contexto e motivação da mudança]
+
+[rodapé opcional — ex.: Refs #issue, BREAKING CHANGE: ...]
+```
+
+### Tipos permitidos
+
+| Tipo | Quando usar |
+|------|------------|
+| `feat` | Nova funcionalidade no firmware ou na documentação |
+| `fix` | Correção de bug no firmware ou na lógica do sistema |
+| `docs` | Alterações apenas em documentação (README, HTML, Markdown) |
+| `style` | Formatação, identação, espaços — sem mudança de lógica |
+| `refactor` | Refatoração de código sem adição de feature ou correção de bug |
+| `test` | Adição ou modificação de testes |
+| `chore` | Tarefas de manutenção: atualizar dependências, configurar ambiente |
+| `hw` | Alterações em arquivos de hardware (esquemático, lista de materiais) |
+| `perf` | Melhorias de desempenho (ex.: ajuste de PWM, tempo de polling) |
+
+### Escopos sugeridos
+
+| Escopo | Descrição |
+|--------|-----------|
+| `tx` | Firmware do transmissor |
+| `rx` | Firmware do receptor |
+| `rf` | Módulo de comunicação NRF24L01 |
+| `motor` | Controle de motores / L298N |
+| `bomba` | Sistema de bomba e relé |
+| `sensor` | Sensor de nível / alertas |
+| `docs` | Documentação (HTML, Markdown) |
+| `hw` | Hardware e pinagem |
+| `ci` | Configurações de CI/CD |
+
+### Exemplos
+
+```
+feat(rx): adicionar failsafe com watchdog de 500ms
+
+Se nenhum pacote RF válido for recebido em 500ms, todos os motores
+são desligados e a bomba é desativada por segurança.
+
+feat(tx): implementar mapeamento tank drive do joystick
+
+fix(rf): corrigir inicialização do NRF24L01 após reset de hardware
+
+docs(docs): adicionar aba de diagramas de bloco no index.html
+
+hw(rx): atualizar pinagem do L298N #2 para GP16–GP21
+
+chore: adicionar .gitignore para arquivos de ambiente MicroPython
+
+style(tx): formatar indentação e remover espaços extras
+```
+
+### Regras gerais
+
+- A **descrição curta** deve estar em **português**, no **imperativo** e sem ponto final.
+  - ✅ `feat(rx): adicionar leitura do sensor de nível`
+  - ❌ `feat(rx): Adicionei a leitura do sensor de nível.`
+- Limite a linha do cabeçalho a **72 caracteres**.
+- Use o corpo para explicar **o quê** e **por quê**, não o como.
+- Commits com `BREAKING CHANGE:` no rodapé indicam mudanças incompatíveis com versões anteriores.
+
+---
+
+## 11. Política de Tags e Versões
+
+O projeto utiliza **[Semantic Versioning (SemVer)](https://semver.org/)** no formato `vMAJOR.MINOR.PATCH`.
+
+### Regras de versionamento
+
+| Componente | Quando incrementar |
+|-----------|-------------------|
+| **MAJOR** | Mudança incompatível com versão anterior — ex.: alteração no formato do pacote RF que quebra compatibilidade TX↔RX |
+| **MINOR** | Nova funcionalidade adicionada de forma retrocompatível — ex.: novo campo no pacote, novo modo de operação |
+| **PATCH** | Correção de bug retrocompatível — ex.: ajuste de deadzone, correção de inicialização |
+
+### Estrutura de tags
+
+```
+v<MAJOR>.<MINOR>.<PATCH>[-<pre-release>]
+
+Exemplos:
+  v0.1.0          — primeira entrega funcional (RF + motores)
+  v0.2.0          — integração da bomba e sensor de nível
+  v0.2.1          — correção de bug no failsafe
+  v1.0.0          — sistema validado e aprovado para apresentação
+  v1.0.0-rc.1     — release candidate antes da apresentação final
+```
+
+### Milestones de versão planejadas
+
+| Tag | Semana | Descrição |
+|-----|:------:|-----------|
+| `v0.1.0` | 5–6 | Comunicação RF funcionando — TX envia, RX recebe |
+| `v0.2.0` | 7–8 | Controle de motores via PWM funcional |
+| `v0.3.0` | 9–10 | Bomba, relé e sensor de nível integrados |
+| `v0.4.0` | 11–12 | Sistema integrado com failsafe e watchdog |
+| `v1.0.0-rc.1` | 13–14 | Release candidate — ajustes e calibração |
+| `v1.0.0` | 15–16 | Versão final — apresentação |
+
+### Como criar uma tag
+
+```bash
+# Criar tag anotada (recomendado)
+git tag -a v0.1.0 -m "feat: primeira versão funcional da comunicação RF"
+
+# Enviar tag para o repositório remoto
+git push origin v0.1.0
+
+# Enviar todas as tags de uma vez
+git push origin --tags
+```
+
+### Branches
+
+| Branch | Propósito |
+|--------|-----------|
+| `main` | Código estável e testado — apenas merges via PR |
+| `develop` | Branch de integração contínua |
+| `feat/<nome>` | Novas funcionalidades — ex.: `feat/sensor-nivel` |
+| `fix/<nome>` | Correções de bug — ex.: `fix/failsafe-timeout` |
+| `hw/<nome>` | Alterações de hardware — ex.: `hw/esquematico-v2` |
+| `docs/<nome>` | Atualizações de documentação |
+
+---
+
+## 12. Cronograma
 
 | Semana | Período | Etapa | Responsável | Status |
 |:------:|---------|-------|-------------|:------:|
-| 1–2 | 11/03 – 22/03 | Levantamento de requisitos, aquisição de componentes | Todos | Pendente |
-| 3–4 | 23/03 – 05/04 | Montagem do chassi 4WD e fiação dos motores + L298N | [Nome 3] | Pendente |
-| 5–6 | 06/04 – 19/04 | Configuração e teste da comunicação RF (NRF24L01 + Pico) | [Nome 2] | Pendente |
-| 7–8 | 20/04 – 03/05 | Firmware do receptor: controle de motores via PWM | [Nome 1] | Pendente |
-| 9–10 | 04/05 – 17/05 | Integração da bomba d'água, relé e sensor de nível | [Nome 1] | Pendente |
-| 11–12 | 18/05 – 31/05 | Integração geral do sistema e testes de validação | Todos | Pendente |
-| 13–14 | 01/06 – 14/06 | Ajustes finais, failsafe, calibração de parâmetros | Todos | Pendente |
-| 15 | 15/06 – 21/06 | Preparação da apresentação e finalização da documentação | [Nome 4] | Pendente |
-| 16 | 22/06+ | Apresentação final | Todos | Pendente |
+| 1–2 | 11/03 – 22/03 | Levantamento de requisitos, aquisição de componentes | Todos | ⏳ Pendente |
+| 3–4 | 23/03 – 05/04 | Montagem do chassi 4WD e fiação dos motores + L298N | [Nome 3] | ⏳ Pendente |
+| 5–6 | 06/04 – 19/04 | Configuração e teste da comunicação RF (NRF24L01 + Pico) | [Nome 2] | ⏳ Pendente |
+| 7–8 | 20/04 – 03/05 | Firmware do receptor: controle de motores via PWM | [Nome 1] | ⏳ Pendente |
+| 9–10 | 04/05 – 17/05 | Integração da bomba d'água, relé e sensor de nível | [Nome 1] | ⏳ Pendente |
+| 11–12 | 18/05 – 31/05 | Integração geral do sistema e testes de validação | Todos | ⏳ Pendente |
+| 13–14 | 01/06 – 14/06 | Ajustes finais, failsafe, calibração de parâmetros | Todos | ⏳ Pendente |
+| 15 | 15/06 – 21/06 | Preparação da apresentação e finalização da documentação | [Nome 4] | ⏳ Pendente |
+| 16 | 22/06+ | Apresentação final | Todos | ⏳ Pendente |
 
 ---
 
-## 10. Orçamento Total Estimado
+## 13. Orçamento Total Estimado
 
 | Categoria | Itens | Subtotal (R$) |
 |-----------|-------|:------------:|
@@ -344,35 +391,32 @@ Onde Y representa o eixo de avanço/recuo e X o eixo de rotação. Os valores s�
 | Miscelânea | Jumpers, LEDs, buzzer, fios, resistores | 20,00 |
 | **TOTAL** | | **R$ 362,00** |
 
-> Os preços são estimativas baseadas em valores de mercado nacional (Mercado Livre, Baú da Eletrônica, Robocore) em março de 2026 e podem variar conforme fornecedor e frete.
+> Preços estimados com base em valores de mercado nacional (Mercado Livre, Baú da Eletrônica, Robocore) em março de 2026.
 
 ---
 
-## 11. Riscos e Limitações
+## 14. Riscos e Limitações
 
-- **Alcance do NRF24L01:** em ambiente interno com obstáculos, o alcance efetivo pode ser inferior a 15–20 m. A versão PA+LNA eleva o alcance para ~100 m em campo aberto.
-- **Impermeabilização:** os componentes eletrônicos devem ser protegidos contra respingos da bomba d'água. Recomenda-se posicionar a eletrônica distante do bico de saída da bomba.
-- **Autonomia da bateria:** com 4 motores + bomba em operação simultânea, a corrente pode ultrapassar 2 A. A bateria 2S deve ter capacidade suficiente (>2000 mAh) para operação de ~20–30 minutos.
-- **Aquecimento do L298N:** o L298N possui eficiência de ~70%. Em operação de alta carga, o dissipador de alumônio incluído no módulo pode ser insuficiente — monitorar temperatura em testes prolongados.
-- **Latência RF:** o protocolo Enhanced ShockBurst do NRF24L01 adiciona latência de ~1–2 ms por pacote. Para controle em malha aberta (sem encoder), isso é aceitável.
-- **Compatibilidade de tensão:** NRF24L01 opera em 3,3 V. O RPi Pico já opera em 3,3 V, mas atenção ao não conectar o VCC do módulo ao pino 5V por engano.
-- **Sensor de nível resistivo:** sensores resistivos têm vida útil reduzida pela corrosão dos eletrodos. Para uso prolongado, considerar sensor capacitivo ou optoeletrônico.
+- **Alcance RF:** em ambiente interno com obstáculos, o alcance efetivo pode ser < 15–20 m. A versão PA+LNA eleva para ~100 m em campo aberto.
+- **Impermeabilização:** proteger a eletrônica contra respingos da bomba. Posicionar o bico de saída longe dos PCBs.
+- **Autonomia:** com 4 motores + bomba simultâneos, corrente pode superar 2 A. Bateria 2S deve ter > 2000 mAh para ~20–30 min.
+- **Aquecimento do L298N:** eficiência ~70%. Monitorar temperatura em testes prolongados; considerar dissipador adicional.
+- **Latência RF:** Enhanced ShockBurst adiciona ~1–2 ms/pacote — aceitável para controle em malha aberta.
+- **Tensão do NRF24L01:** opera em 3,3 V — nunca conectar ao 5V.
+- **Sensor resistivo:** eletrodos corroem com uso prolongado. Considerar sensor capacitivo para uso a longo prazo.
 
 ---
 
-## 12. Referências Bibliográficas
+## 15. Referências Bibliográficas
 
-1. **Raspberry Pi Ltd.** *Raspberry Pi Pico Datasheet*. Disponível em: [https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf](https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf). Acesso em: mar. 2026.
-
-2. **Raspberry Pi Ltd.** *RP2040 Datasheet*. Disponível em: [https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf](https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf). Acesso em: mar. 2026.
-
-3. **STMicroelectronics.** *L298N Dual Full-Bridge Driver Datasheet*. Disponível em: [https://www.st.com/resource/en/datasheet/l298.pdf](https://www.st.com/resource/en/datasheet/l298.pdf). Acesso em: mar. 2026.
-
-4. **Nordic Semiconductor.** *nRF24L01+ Product Specification v1.0*. Disponível em: [https://www.nordicsemi.com/products/nrf24l01](https://www.nordicsemi.com/products/nrf24l01). Acesso em: mar. 2026.
-
-5. **MicroPython Project.** *MicroPython Documentation for RP2*. Disponível em: [https://docs.micropython.org/en/latest/rp2/quickref.html](https://docs.micropython.org/en/latest/rp2/quickref.html). Acesso em: mar. 2026.
-
-6. **Micropython-nrf24l01 Library.** Disponível em: [https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/radio/nrf24l01](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/radio/nrf24l01). Acesso em: mar. 2026.
+1. **Raspberry Pi Ltd.** *Raspberry Pi Pico Datasheet*. Disponível em: https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf
+2. **Raspberry Pi Ltd.** *RP2040 Datasheet*. Disponível em: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
+3. **STMicroelectronics.** *L298N Dual Full-Bridge Driver Datasheet*. Disponível em: https://www.st.com/resource/en/datasheet/l298.pdf
+4. **Nordic Semiconductor.** *nRF24L01+ Product Specification v1.0*. Disponível em: https://www.nordicsemi.com/products/nrf24l01
+5. **MicroPython Project.** *MicroPython Documentation for RP2*. Disponível em: https://docs.micropython.org/en/latest/rp2/quickref.html
+6. **micropython-nrf24l01 Library.** Disponível em: https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/radio/nrf24l01
+7. **Conventional Commits Specification v1.0.0.** Disponível em: https://www.conventionalcommits.org/pt-br/v1.0.0/
+8. **Semantic Versioning 2.0.0.** Disponível em: https://semver.org/lang/pt-BR/
 
 ---
 
