@@ -16,13 +16,11 @@
 6. [Arquitetura do Sistema](#6-arquitetura-do-sistema)
 7. [Pinagem e Conexões](#7-pinagem-e-conexões)
 8. [Firmware — Descrição e Fluxograma de Estados](#8-firmware--descrição-e-fluxograma-de-estados)
-9. [Como Executar](#9-como-executar)
-10. [Convenção de Commits](#10-convenção-de-commits)
-11. [Política de Tags e Versões](#11-política-de-tags-e-versões)
-12. [Cronograma](#12-cronograma)
-13. [Orçamento Total Estimado](#13-orçamento-total-estimado)
-14. [Riscos e Limitações](#14-riscos-e-limitações)
-15. [Referências Bibliográficas](#15-referências-bibliográficas)
+9. [Convenção de Commits](#9-convenção-de-commits)
+10. [Política de Tags e Versões](#10-política-de-tags-e-versões)
+11. [Cronograma](#11-cronograma)
+12. [Orçamento Total Estimado](#12-orçamento-total-estimado)
+13. [Referências Bibliográficas](#13-referências-bibliográficas)
 
 ---
 
@@ -201,31 +199,7 @@ Onde Y = eixo vertical (avanço/recuo) e X = eixo horizontal (giro). Valores lim
 
 ---
 
-## 9. Como Executar
-
-### Pré-requisitos
-- [Thonny IDE](https://thonny.org/) ou qualquer cliente MicroPython para RP2040
-- MicroPython >= 1.22 gravado nos dois Raspberry Pi Pico
-- Biblioteca [`nrf24l01`](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/radio/nrf24l01) copiada para ambos os Picos
-
-### Passos
-```bash
-# 1. Clone o repositório
-git clone https://github.com/<usuario>/EEN251_Projeto_Semestral.git
-
-# 2. Grave o firmware no Pico TX
-# Abra firmware/tx/main.py no Thonny e execute no dispositivo
-
-# 3. Grave o firmware no Pico RX
-# Abra firmware/rx/main.py no Thonny e execute no dispositivo
-
-# 4. Visualize a documentação
-# Abra docs/index.html em qualquer navegador
-```
-
----
-
-## 10. Convenção de Commits
+## 9. Convenção de Commits
 
 Este projeto adota o padrão **[Conventional Commits](https://www.conventionalcommits.org/)** para manter um histórico claro e geração automática de changelogs.
 
@@ -299,7 +273,7 @@ style(tx): formatar indentação e remover espaços extras
 
 ---
 
-## 11. Política de Tags e Versões
+## 10. Política de Tags e Versões
 
 O projeto utiliza **[Semantic Versioning (SemVer)](https://semver.org/)** no formato `vMAJOR.MINOR.PATCH`.
 
@@ -361,7 +335,7 @@ git push origin --tags
 
 ---
 
-## 12. Cronograma
+## 11. Cronograma
 
 | Semana | Período | Etapa | Responsável | Status |
 |:------:|---------|-------|-------------|:------:|
@@ -377,7 +351,7 @@ git push origin --tags
 
 ---
 
-## 13. Orçamento Total Estimado
+## 12. Orçamento Total Estimado
 
 | Categoria | Itens | Subtotal (R$) |
 |-----------|-------|:------------:|
@@ -395,19 +369,7 @@ git push origin --tags
 
 ---
 
-## 14. Riscos e Limitações
-
-- **Alcance RF:** em ambiente interno com obstáculos, o alcance efetivo pode ser < 15–20 m. A versão PA+LNA eleva para ~100 m em campo aberto.
-- **Impermeabilização:** proteger a eletrônica contra respingos da bomba. Posicionar o bico de saída longe dos PCBs.
-- **Autonomia:** com 4 motores + bomba simultâneos, corrente pode superar 2 A. Bateria 2S deve ter > 2000 mAh para ~20–30 min.
-- **Aquecimento do L298N:** eficiência ~70%. Monitorar temperatura em testes prolongados; considerar dissipador adicional.
-- **Latência RF:** Enhanced ShockBurst adiciona ~1–2 ms/pacote — aceitável para controle em malha aberta.
-- **Tensão do NRF24L01:** opera em 3,3 V — nunca conectar ao 5V.
-- **Sensor resistivo:** eletrodos corroem com uso prolongado. Considerar sensor capacitivo para uso a longo prazo.
-
----
-
-## 15. Referências Bibliográficas
+## 13. Referências Bibliográficas
 
 1. **Raspberry Pi Ltd.** *Raspberry Pi Pico Datasheet*. Disponível em: https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf
 2. **Raspberry Pi Ltd.** *RP2040 Datasheet*. Disponível em: https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf
