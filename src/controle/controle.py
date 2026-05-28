@@ -1,18 +1,125 @@
-from machine import Pin, ADC, SPI
+from machine import Pin, ADC, SPI, I2C
 import time
 
 # ========================
 # CONFIG GPIO
 # ========================
-# Joysticks
-joy1_x = ADC(26)  # ADC0 (GPIO26)
-joy1_y = ADC(27)  # ADC1 (GPIO27)
+joy1_x = ADC(27)
+joy1_y = ADC(26)
+button = Pin(19, Pin.IN, Pin.PULL_UP)
+led    = Pin(25, Pin.OUT)
 
-# Botão CLICÁVEL do joystick (pino SW)
-button = Pin(19, Pin.IN, Pin.PULL_UP)  # ← GPIO19
+# ========================
+# I2C + DISPLAY OLED SSD1306
+# ========================
+i2c = I2C(0, sda=Pin(0), scl=Pin(1), freq=400000)
 
-# LED onboard do Pico (GPIO25)
-led = Pin(25, Pin.OUT)  # ← era GPIO17, agora LED da placa
+class SSD1306:
+    def __init__(self, i2c, addr=0x3C, width=128, height=64):
+        self.i2c    = i2c
+        self.addr   = addr
+        self.width  = width
+        self.height = height
+        self.pages  = height // 8
+        self.buffer = bytearray(self.pages * width)
+        self._init_display()
+
+    def _cmd(self, cmd):
+        self.i2c.writeto(self.addr, bytearray([0x00, cmd]))
+
+    def _init_display(self):
+        for cmd in [
+            0xAE, 0x20, 0x00, 0xB0, 0xC8,
+            0x00, 0x10, 0x40, 0x81, 0xFF,
+            0xA1, 0xA6, 0xA8, 0x3F, 0xA4,
+            0xD3, 0x00, 0xD5, 0xF0, 0xD9,
+            0x22, 0xDA, 0x12, 0xDB, 0x20,
+            0x8D, 0x14, 0xAF
+        ]:
+            self._cmd(cmd)
+
+    def show(self):
+        for page in range(self.pages):
+            self._cmd(0xB0 + page)
+            self._cmd(0x00)
+            self._cmd(0x10)
+            self.i2c.writeto(self.addr,
+                bytearray([0x40]) + self.buffer[page * self.width:(page + 1) * self.width])
+
+    def fill(self, color):
+        val = 0xFF if color else 0x00
+        self.buffer = bytearray([val] * len(self.buffer))
+
+    def pixel(self, x, y, color):
+        if 0 <= x < self.width and 0 <= y < self.height:
+            page = y // 8
+            bit  = y % 8
+            idx  = page * self.width + x
+            if color:
+                self.buffer[idx] |= (1 << bit)
+            else:
+                self.buffer[idx] &= ~(1 << bit)
+
+    FONT = {
+        ' ': [0,0,0,0,0],
+        'A': [0x7E,0x09,0x09,0x09,0x7E],
+        'B': [0x7F,0x49,0x49,0x49,0x36],
+        'C': [0x3E,0x41,0x41,0x41,0x22],
+        'D': [0x7F,0x41,0x41,0x22,0x1C],
+        'E': [0x7F,0x49,0x49,0x49,0x41],
+        'F': [0x7F,0x09,0x09,0x09,0x01],
+        'G': [0x3E,0x41,0x49,0x49,0x7A],
+        'H': [0x7F,0x08,0x08,0x08,0x7F],
+        'I': [0x41,0x7F,0x41,0x00,0x00],
+        'J': [0x20,0x40,0x41,0x3F,0x01],
+        'K': [0x7F,0x08,0x14,0x22,0x41],
+        'L': [0x7F,0x40,0x40,0x40,0x40],
+        'M': [0x7F,0x02,0x0C,0x02,0x7F],
+        'N': [0x7F,0x04,0x08,0x10,0x7F],
+        'O': [0x3E,0x41,0x41,0x41,0x3E],
+        'P': [0x7F,0x09,0x09,0x09,0x06],
+        'Q': [0x3E,0x41,0x51,0x21,0x5E],
+        'R': [0x7F,0x09,0x19,0x29,0x46],
+        'S': [0x46,0x49,0x49,0x49,0x31],
+        'T': [0x01,0x01,0x7F,0x01,0x01],
+        'U': [0x3F,0x40,0x40,0x40,0x3F],
+        'V': [0x1F,0x20,0x40,0x20,0x1F],
+        'W': [0x3F,0x40,0x38,0x40,0x3F],
+        'X': [0x63,0x14,0x08,0x14,0x63],
+        'Y': [0x07,0x08,0x70,0x08,0x07],
+        'Z': [0x61,0x51,0x49,0x45,0x43],
+        '0': [0x3E,0x51,0x49,0x45,0x3E],
+        '1': [0x00,0x42,0x7F,0x40,0x00],
+        '2': [0x42,0x61,0x51,0x49,0x46],
+        '3': [0x21,0x41,0x45,0x4B,0x31],
+        '4': [0x18,0x14,0x12,0x7F,0x10],
+        '5': [0x27,0x45,0x45,0x45,0x39],
+        '6': [0x3C,0x4A,0x49,0x49,0x30],
+        '7': [0x01,0x71,0x09,0x05,0x03],
+        '8': [0x36,0x49,0x49,0x49,0x36],
+        '9': [0x06,0x49,0x49,0x29,0x1E],
+        ':': [0x00,0x36,0x36,0x00,0x00],
+        '-': [0x08,0x08,0x08,0x08,0x08],
+        '%': [0x23,0x13,0x08,0x64,0x62],
+    }
+
+    def text(self, string, x, y, color=1):
+        for ch in string.upper():
+            glyph = self.FONT.get(ch, self.FONT[' '])
+            for col_idx, col in enumerate(glyph):
+                for row in range(8):
+                    self.pixel(x + col_idx, y + row, (col >> row) & 1 if color else 0)
+            x += 6
+            if x > self.width:
+                break
+
+# Inicializa display
+display = SSD1306(i2c)
+display.fill(0)
+display.text("CARRO", 30, 20)
+display.text("BOMBEIRO", 16, 36)
+display.show()
+time.sleep(2)
 
 # ========================
 # SPI NRF24L01
@@ -25,41 +132,139 @@ spi = SPI(0,
           mosi=Pin(7),
           miso=Pin(4))
 csn = Pin(5, Pin.OUT)
-ce = Pin(9, Pin.OUT)
+ce  = Pin(9, Pin.OUT)
 
 # ========================
-# DRIVER SIMPLES NRF24L01
+# ENDEREÇOS
+# ========================
+ADDR_CONTROLE = [0xE7,0xE7,0xE7,0xE7,0xE7]
+ADDR_CARRO    = [0xC2,0xC2,0xC2,0xC2,0xC2]
+
+# ========================
+# DRIVER NRF24L01
 # ========================
 class NRF24:
     def __init__(self, spi, csn, ce):
         self.spi = spi
         self.csn = csn
-        self.ce = ce
+        self.ce  = ce
         self.csn.value(1)
         self.ce.value(0)
-        self.init()
+        self.init_tx()
 
     def write_reg(self, reg, value):
         self.csn.value(0)
         self.spi.write(bytearray([0x20 | reg, value]))
         self.csn.value(1)
 
-    def init(self):
-        self.write_reg(0x00, 0x0A)  # Power up + TX mode
-        self.write_reg(0x01, 0x00)  # No auto ack
-        self.write_reg(0x05, 0x02)  # Canal
-        self.write_reg(0x06, 0x06)  # Data rate
+    def read_reg(self, reg):
+        self.csn.value(0)
+        self.spi.write(bytearray([reg & 0x1F]))
+        result = self.spi.read(1)
+        self.csn.value(1)
+        return result[0]
+
+    def set_addr(self, pipe_reg, addr_bytes):
+        self.csn.value(0)
+        self.spi.write(bytearray([0x20 | pipe_reg]) + bytearray(addr_bytes))
+        self.csn.value(1)
+
+    def flush_rx(self):
+        self.csn.value(0)
+        self.spi.write(bytearray([0xE2]))
+        self.csn.value(1)
+
+    def flush_tx(self):
+        self.csn.value(0)
+        self.spi.write(bytearray([0xE1]))
+        self.csn.value(1)
+
+    def init_tx(self):
+        time.sleep_ms(100)
+        self.write_reg(0x00, 0x0A)   # Power up + TX
+        self.write_reg(0x01, 0x00)   # Sem auto-ack
+        self.write_reg(0x02, 0x01)   # Pipe 0 habilitado
+        self.write_reg(0x05, 0x02)   # Canal 2
+        self.write_reg(0x06, 0x26)   # Data rate 1Mbps
+
+        self.set_addr(0x10, ADDR_CARRO)  # TX addr
+        self.set_addr(0x0A, ADDR_CONTROLE)  # RX pipe 0 addr
+        self.write_reg(0x11, 4)             # Payload pipe 0 = 4 bytes
+
+        self.flush_rx()
+        self.flush_tx()
+        self.write_reg(0x07, 0x70)
+
+    def modo_rx(self):
+        self.ce.value(0)
+        self.write_reg(0x00, 0x0B)
+        self.write_reg(0x02, 0x01)
+        self.set_addr(0x0A, ADDR_CONTROLE)
+        self.flush_rx()
+        self.write_reg(0x07, 0x70)
+        self.ce.value(1)
+        time.sleep_us(150)
+
+    def modo_tx(self):
+        self.ce.value(0)
+        self.write_reg(0x00, 0x0A)
+        self.flush_tx()
+        time.sleep_us(150)
 
     def send(self, data):
+        self.modo_tx()
         self.csn.value(0)
         self.spi.write(bytearray([0xA0]) + data)
         self.csn.value(1)
         self.ce.value(1)
         time.sleep_us(15)
         self.ce.value(0)
+        time.sleep_ms(3)
+        self.write_reg(0x07, 0x70)
+        self.modo_rx()  # ← ADICIONADO: voltar para RX após transmitir
 
-# Inicializa rádio
+    def available(self):
+        status = self.read_reg(0x07)
+        if status & 0x10:
+            self.write_reg(0x07, 0x70)
+            self.flush_rx()
+        return (status & 0x40) != 0
+
+    def receive(self):
+        self.csn.value(0)
+        self.spi.write(bytearray([0x61]))
+        data = self.spi.read(4)
+        self.csn.value(1)
+        self.write_reg(0x07, 0x40)
+        return data
+
+    def dump_regs(self):
+        print("=== DUMP REGISTRADORES ===")
+        print(f"CONFIG    (0x00): {self.read_reg(0x00):#04x}")
+        print(f"EN_AA     (0x01): {self.read_reg(0x01):#04x}")
+        print(f"EN_RXADDR (0x02): {self.read_reg(0x02):#04x}")
+        print(f"RF_CH     (0x05): {self.read_reg(0x05):#04x}")
+        print(f"RF_SETUP  (0x06): {self.read_reg(0x06):#04x}")
+        print(f"STATUS    (0x07): {self.read_reg(0x07):#04x}")
+        print(f"RX_PW_P0  (0x11): {self.read_reg(0x11):#04x}")
+        self.csn.value(0)
+        self.spi.write(bytearray([0x10]))
+        tx_addr = self.spi.read(5)
+        self.csn.value(1)
+        print(f"TX_ADDR   (0x10): {[hex(b) for b in tx_addr]}")
+        self.csn.value(0)
+        self.spi.write(bytearray([0x0A]))
+        rx0_addr = self.spi.read(5)
+        self.csn.value(1)
+        print(f"RX_ADDR_P0(0x0A): {[hex(b) for b in rx0_addr]}")
+        print("==========================")
+
+# ========================
+# INICIALIZA RÁDIO
+# ========================
 radio = NRF24(spi, csn, ce)
+print(">>> DUMP INICIAL (modo TX):")
+radio.dump_regs()
 
 # ========================
 # FUNÇÕES
@@ -73,28 +278,73 @@ def normalize(value):
 # ========================
 # LOOP PRINCIPAL
 # ========================
+INTERVALO_TX = 400  # Deve ser > JANELA_RX (300ms) para não interromper a espera por resposta
+JANELA_RX    = 300  # Aumentado para 300ms (vs 150ms) para receber resposta do carro
+
+ultimo_tx      = time.ticks_ms()
+umidade_valor  = "--"
+umidade_status = "--"
+primeiro_rx    = True
+
 while True:
-    x = read_joystick(joy1_x)
-    y = read_joystick(joy1_y)
+    if time.ticks_diff(time.ticks_ms(), ultimo_tx) >= INTERVALO_TX:
+        x_norm = -normalize(read_joystick(joy1_x))
+        y_norm = -normalize(read_joystick(joy1_y))
+        btn    = button.value()
 
-    x_norm = -normalize(x)
-    y_norm = -normalize(y)
+        led.value(1 if btn == 0 else 0)
 
-    btn = button.value()  # 0 = pressionado
+        payload = bytearray([
+            x_norm & 0xFF,
+            y_norm & 0xFF,
+            btn,
+            0
+        ])
+        radio.send(payload)
+        time.sleep_ms(30)  # Aguardar para carro processar e responder
+        
+        ultimo_tx = time.ticks_ms()
 
-    # LED onboard acende ao clicar o joystick
-    led.value(1 if btn == 0 else 0)
+        if primeiro_rx:
+            print(">>> DUMP EM MODO RX:")
+            radio.dump_regs()
+            primeiro_rx = False
 
-    # Monta pacote (4 bytes)
-    payload = bytearray([
-        x_norm & 0xFF,
-        y_norm & 0xFF,
-        btn,
-        0  # reservado
-    ])
+        deadline = time.ticks_add(time.ticks_ms(), JANELA_RX)
+        recebeu  = False
 
-    radio.send(payload)
+        while time.ticks_diff(deadline, time.ticks_ms()) > 0:
+            if radio.available():
+                resp = radio.receive()
+                if resp[2] == 0xFF:
+                    umidade_valor  = str(resp[0])
+                    umidade_status = "AGUA" if resp[1] == 1 else "SECO"
+                    print(f"OK_RX | Umidade: {umidade_valor}% {umidade_status}")
+                recebeu = True
+                break
+            time.sleep_ms(2)
 
-    print("X:", x_norm, "Y:", y_norm, "BTN:", 1 if btn == 0 else 0)
+        if not recebeu:
+            status   = radio.read_reg(0x07)
+            fifo     = radio.read_reg(0x17)
+            en_rx    = radio.read_reg(0x02)
+            pw_p0    = radio.read_reg(0x11)
+            rx_p_no  = (status >> 1) & 0x07  # Qual pipe recebeu (se houver)
+            rx_dr    = (status >> 6) & 0x01  # RX Data Ready flag
+            print(f"EXPIROU | STATUS:{status:#04x} FIFO:{fifo:#04x} EN_RX:{en_rx:#04x} RX_DR:{rx_dr} RX_P_NO:{rx_p_no}")
+            print(f"DEBUG: Esperou {JANELA_RX}ms, CONFIG ainda em RX")
 
-    time.sleep(0.1)
+        radio.modo_tx()
+
+        display.fill(0)
+        display.text("CARRO BOMBEIRO", 4, 0)
+        display.text("X:" + str(x_norm), 0, 19)
+        display.text("Y:" + str(y_norm), 0, 30)
+        display.text("BTN:" + ("ON" if btn == 0 else "OFF"), 0, 41)
+        display.text("UM:" + umidade_valor + "% " + umidade_status, 0, 55)
+        display.show()
+
+        print("X:", x_norm, "Y:", y_norm, "BTN:", 1 if btn == 0 else 0,
+              "| Umidade:", umidade_valor + "%", umidade_status)
+
+    time.sleep_ms(5)
