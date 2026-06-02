@@ -181,16 +181,14 @@ class NRF24:
 
     def init_tx(self):
         time.sleep_ms(100)
-        self.write_reg(0x00, 0x0A)   # Power up + TX
-        self.write_reg(0x01, 0x00)   # Sem auto-ack
-        self.write_reg(0x02, 0x01)   # Pipe 0 habilitado
-        self.write_reg(0x05, 0x02)   # Canal 2
-        self.write_reg(0x06, 0x26)   # Data rate 1Mbps
-
-        self.set_addr(0x10, ADDR_CARRO)  # TX addr
-        self.set_addr(0x0A, ADDR_CONTROLE)  # RX pipe 0 addr
-        self.write_reg(0x11, 4)             # Payload pipe 0 = 4 bytes
-
+        self.write_reg(0x00, 0x0A)
+        self.write_reg(0x01, 0x00)
+        self.write_reg(0x02, 0x01)
+        self.write_reg(0x05, 0x02)
+        self.write_reg(0x06, 0x26)
+        self.set_addr(0x10, ADDR_CARRO)
+        self.set_addr(0x0A, ADDR_CONTROLE)
+        self.write_reg(0x11, 4)
         self.flush_rx()
         self.flush_tx()
         self.write_reg(0x07, 0x70)
@@ -221,7 +219,7 @@ class NRF24:
         self.ce.value(0)
         time.sleep_ms(3)
         self.write_reg(0x07, 0x70)
-        self.modo_rx()  # ← ADICIONADO: voltar para RX após transmitir
+        self.modo_rx()
 
     def available(self):
         status = self.read_reg(0x07)
@@ -276,23 +274,81 @@ def normalize(value):
     return int((value - 32768) / 32768 * 100)
 
 # ========================
+# SIMULAÇÃO DE UMIDADE
+# ========================
+# Velocidade de queda: quantos % por segundo segurando o botão.
+# Ajuste conforme quiser — ex: 10 = cai 10% a cada segundo.
+UMIDADE_QUEDA_POR_SEG = 10.0
+
+umidade_sim       = 100       # Começa em 100% e só reseta ao religar
+btn_anterior      = 1         # Estado anterior do botão (1 = solto)
+btn_pressionado_t = None      # Timestamp de quando começou a pressionar
+
+def atualizar_umidade_simulada(btn_atual):
+    """
+    Atualiza a umidade simulada com base no estado do botão.
+
+    - btn_atual == 0  → botão pressionado (Pull-up ativo baixo)
+    - btn_atual == 1  → botão solto
+
+    Enquanto pressionado: diminui linearmente pelo tempo.
+    Ao soltar: congela no valor atual.
+    Ao pressionar de novo: continua de onde parou.
+    """
+    global umidade_sim, btn_anterior, btn_pressionado_t
+
+    agora = time.ticks_ms()
+
+    if btn_atual == 0:  # Botão pressionado
+        if btn_anterior == 1:
+            # Borda de descida: registra quando começou
+            btn_pressionado_t = agora
+
+        # Calcula quanto tempo está pressionado nesta sessão (ms → s)
+        tempo_pressionado_s = time.ticks_diff(agora, btn_pressionado_t) / 1000.0
+
+        # Calcula nova umidade baseada no tempo acumulado
+        nova = umidade_sim - (UMIDADE_QUEDA_POR_SEG * tempo_pressionado_s)
+        umidade_atual = max(0, int(nova))
+
+    else:  # Botão solto
+        if btn_anterior == 0:
+            # Borda de subida: congela o valor calculado no último frame
+            agora_antes = btn_pressionado_t
+            tempo_s = time.ticks_diff(agora, agora_antes) / 1000.0
+            nova = umidade_sim - (UMIDADE_QUEDA_POR_SEG * tempo_s)
+            umidade_sim = max(0, int(nova))  # Salva o valor congelado
+            btn_pressionado_t = None
+
+        umidade_atual = umidade_sim  # Retorna o valor congelado
+
+    btn_anterior = btn_atual
+    return umidade_atual
+
+# ========================
 # LOOP PRINCIPAL
 # ========================
-INTERVALO_TX = 400  # Deve ser > JANELA_RX (300ms) para não interromper a espera por resposta
-JANELA_RX    = 300  # Aumentado para 300ms (vs 150ms) para receber resposta do carro
+INTERVALO_TX = 80
+JANELA_RX    = 25
 
-ultimo_tx      = time.ticks_ms()
-umidade_valor  = "--"
-umidade_status = "--"
-primeiro_rx    = True
+ultimo_tx = time.ticks_ms()
 
 while True:
+
     if time.ticks_diff(time.ticks_ms(), ultimo_tx) >= INTERVALO_TX:
+
         x_norm = -normalize(read_joystick(joy1_x))
         y_norm = -normalize(read_joystick(joy1_y))
-        btn    = button.value()
+
+        btn = button.value()
 
         led.value(1 if btn == 0 else 0)
+
+        # Atualiza umidade simulada
+        umidade_atual = atualizar_umidade_simulada(btn)
+
+        # Determina status (AGUA se >= 30%, SECO abaixo)
+        umidade_status = "AGUA" if umidade_atual >= 30 else "SECO"
 
         payload = bytearray([
             x_norm & 0xFF,
@@ -300,15 +356,10 @@ while True:
             btn,
             0
         ])
-        radio.send(payload)
-        time.sleep_ms(30)  # Aguardar para carro processar e responder
-        
-        ultimo_tx = time.ticks_ms()
 
-        if primeiro_rx:
-            print(">>> DUMP EM MODO RX:")
-            radio.dump_regs()
-            primeiro_rx = False
+        radio.send(payload)
+
+        ultimo_tx = time.ticks_ms()
 
         deadline = time.ticks_add(time.ticks_ms(), JANELA_RX)
         recebeu  = False
@@ -317,34 +368,32 @@ while True:
             if radio.available():
                 resp = radio.receive()
                 if resp[2] == 0xFF:
-                    umidade_valor  = str(resp[0])
-                    umidade_status = "AGUA" if resp[1] == 1 else "SECO"
-                    print(f"OK_RX | Umidade: {umidade_valor}% {umidade_status}")
+                    print("RX OK | Umidade real:", resp[0])
                 recebeu = True
                 break
-            time.sleep_ms(2)
+            time.sleep_ms(1)
 
         if not recebeu:
-            status   = radio.read_reg(0x07)
-            fifo     = radio.read_reg(0x17)
-            en_rx    = radio.read_reg(0x02)
-            pw_p0    = radio.read_reg(0x11)
-            rx_p_no  = (status >> 1) & 0x07  # Qual pipe recebeu (se houver)
-            rx_dr    = (status >> 6) & 0x01  # RX Data Ready flag
-            print(f"EXPIROU | STATUS:{status:#04x} FIFO:{fifo:#04x} EN_RX:{en_rx:#04x} RX_DR:{rx_dr} RX_P_NO:{rx_p_no}")
-            print(f"DEBUG: Esperou {JANELA_RX}ms, CONFIG ainda em RX")
+            print(f"Sem resposta RF | Umidade SIM: {umidade_atual}% [{umidade_status}]")
 
-        radio.modo_tx()
-
+        # ---- Atualiza OLED ----
         display.fill(0)
+
         display.text("CARRO BOMBEIRO", 4, 0)
-        display.text("X:" + str(x_norm), 0, 19)
+
+        display.text("X:" + str(x_norm), 0, 18)
         display.text("Y:" + str(y_norm), 0, 30)
-        display.text("BTN:" + ("ON" if btn == 0 else "OFF"), 0, 41)
-        display.text("UM:" + umidade_valor + "% " + umidade_status, 0, 55)
+
+        display.text(
+            "BTN:" + ("ON" if btn == 0 else "OFF"),
+            0, 42
+        )
+
+        display.text(
+            "UM:" + str(umidade_atual) + "% " + umidade_status,
+            0, 54
+        )
+
         display.show()
 
-        print("X:", x_norm, "Y:", y_norm, "BTN:", 1 if btn == 0 else 0,
-              "| Umidade:", umidade_valor + "%", umidade_status)
-
-    time.sleep_ms(5)
+    time.sleep_ms(1)
