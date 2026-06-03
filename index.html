@@ -430,7 +430,7 @@
       <div class="card prose">
         <p>O projeto consiste no desenvolvimento de um veículo robótico em escala inspirado em um caminhão de bombeiro, capaz de se locomover de maneira teleoprada por meio de comunicação sem fio RF 2.4 GHz (módulo NRF24L01). O veículo é dotado de tração 4WD com quatro motores DC controlados por dois módulos L298N, uma mini bomba d'água acionável remotamente, e um reservatório de água com sensor de nível que alerta o operador quando a água estiver baixa.</p>
         <p>O sistema é dividido em dois blocos principais:</p>
-        <p><strong>Transmissor (controle remoto):</strong> baseado em um Raspberry Pi Pico com joystick analógico e botões, responsável por capturar os comandos do operador e enviá-los via NRF24L01.</p>
+        <p><strong>Transmissor (controle remoto):</strong> baseado em um Raspberry Pi Pico com joystick analógico, botões e display OLED SSD1306, responsável por capturar os comandos do operador e enviá-los via NRF24L01.</p>
         <p><strong>Receptor (carro):</strong> baseado em um segundo Raspberry Pi Pico que recebe os pacotes RF, interpreta os comandos e aciona os motores, a bomba e os alertas de nível.</p>
         <p>Todo o firmware é desenvolvido em <strong>MicroPython</strong>, aproveitando a plataforma Raspberry Pi Pico (microcontrolador RP2040) como base de hardware.</p>
       </div>
@@ -444,16 +444,15 @@
       </div>
       <div class="card" style="margin-bottom:1rem">
         <div class="card-title">3.1 — Objetivo Geral</div>
-        <p class="prose" style="margin:0">Projetar, construir e programar um carro de bombeiro em miniatura, teleoprado por radiofrequência, com sistema de bombeamento de água e monitoramento do nível do reservatório, utilizando a plataforma Raspberry Pi Pico como controlador central.</p>
+        <p class="prose" style="margin:0">O objetivo geral deste trabalho é projetar e construir um veículo robótico controlado remotamente via radiofrequência, capaz de realizar manobras de locomoção e acionamento de uma bomba d'água, com monitoramento de status em tempo real.</p>
       </div>
       <div class="card">
         <div class="card-title">3.2 — Objetivos Específicos</div>
         <ul class="obj-list">
-          <li>Implementar comunicação bidirecional RF 2.4 GHz entre controle e veículo utilizando o módulo NRF24L01.</li>
-          <li>Controlar a velocidade e direção de quatro motores DC via PWM, permitindo manobras de avanço, recuo e curva (diferencial de velocidade entre lados).</li>
-          <li>Acionar remotamente uma mini bomba d'água via relé para simular o combate a incêndios.</li>
-          <li>Monitorar em tempo real o nível do reservatório de água por meio de sensor capacitivo/resistivo, com alertas visuais (LED) e sonoros (buzzer) ao operador.</li>
-          <li>Documentar todo o processo de desenvolvimento, desde o design de hardware até a validação do sistema integrado.</li>
+          <li>Implementação de comunicação bidirecional robusta entre controle e veículo.</li>
+          <li>Controle de tração diferencial (tank drive) para quatro motores.</li>
+          <li>Sistema de alerta de nível de água com indicadores visuais e sonoros.</li>
+          <li>Desenvolvimento de firmware em MicroPython para a plataforma Raspberry Pi Pico.</li>
         </ul>
       </div>
     </section>
@@ -691,10 +690,10 @@
 graph TD
     BAT_TX["🔋 Bateria LiPo\n3,7V"]
     PICO_TX["⚙️ Raspberry Pi Pico TX\nRP2040"]
-    JOY_X["🕹️ Joystick — Eixo X\nADC0 / GP26"]
-    JOY_Y["🕹️ Joystick — Eixo Y\nADC1 / GP27"]
-    BTN1["🔴 Botão Bomba\nGP14 — pull-up"]
-    BTN2["⛔ Botão Stop/Emergência\nGP15 — pull-up"]
+    JOY_X["🕹️ Joystick — Eixo X\nADC0 / GP27"]
+    JOY_Y["🕹️ Joystick — Eixo Y\nADC1 / GP26"]
+    BTN1["🔴 Botão Bomba\nGP19 — pull-up"]
+    OLED["🖥️ Display OLED\nI2C0 / GP0, 1"]
     NRF_TX["📡 NRF24L01\nSPI0 PTX mode"]
     RF["≋≋≋ RF 2,4 GHz ≋≋≋\nEnhanced ShockBurst"]
 
@@ -702,9 +701,9 @@ graph TD
     JOY_X -->|"ADC 0–3,3V"| PICO_TX
     JOY_Y -->|"ADC 0–3,3V"| PICO_TX
     BTN1 -->|"GPIO LOW = pressionado"| PICO_TX
-    BTN2 -->|"GPIO LOW = pressionado"| PICO_TX
+    PICO_TX -->|"I2C SDA/SCL"| OLED
     PICO_TX -->|"SPI: SCK/MOSI/MISO/CS/CE"| NRF_TX
-    NRF_TX -->|"Pacote 6 bytes @ ~50Hz"| RF
+    NRF_TX -->|"Pacote 4 bytes @ ~12Hz"| RF
         </div>
       </div>
     </section>
@@ -723,43 +722,33 @@ graph TD
     PICO_RX["⚙️ Raspberry Pi Pico RX\nRP2040"]
     RF_IN["≋≋≋ RF 2,4 GHz ≋≋≋"]
     NRF_RX["📡 NRF24L01\nSPI0 PRX mode"]
-    L298N_A["🔧 L298N 1\nLado Esquerdo"]
-    L298N_B["🔧 L298N 2\nLado Direito"]
-    M1["⚙ Motor 1\nDianteiro Esq."]
-    M2["⚙ Motor 2\nTraseiro Esq."]
-    M3["⚙ Motor 3\nDianteiro Dir."]
-    M4["⚙ Motor 4\nTraseiro Dir."]
-    RELAY["🔌 Relé 5V\n1 canal"]
+    L298N["🔧 Driver L298N\n(Motores)"]
+    M1["⚙ Motor Esq.\nDiant + Tras"]
+    M2["⚙ Motor Dir.\nDiant + Tras"]
+    RELAY["🔌 Relé 5V\n(Bomba)"]
     PUMP["💧 Mini Bomba d'água\n3–6V DC"]
-    RESERV["🪣 Reservatório\n~150 mL"]
-    SENSOR["📊 Sensor de Nível\nADC / GP26"]
-    LED["💡 LED Vermelho\nAlerta Nível Baixo"]
-    BUZZ["🔊 Buzzer\nAlerta Sonoro"]
+    SENSOR_A["📊 Sensor Nível (A)\nADC / GP27"]
+    SENSOR_D["🚨 Alerta Nível (D)\nGPIO / GP22"]
+    LED["💡 LED Indicador\nStatus RF / GP13"]
 
     BAT_RX -->|"7,4V"| REG
-    REG -->|"5V"| L298N_A
-    REG -->|"5V"| L298N_B
+    REG -->|"5V"| L298N
     REG -->|"5V"| RELAY
     REG -->|"3,3V via Pico VSYS"| PICO_RX
 
     RF_IN -->|"pacote recebido"| NRF_RX
-    NRF_RX -->|"SPI + IRQ"| PICO_RX
+    NRF_RX -->|"SPI: MISO/MOSI/SCK/CS/CE"| PICO_RX
 
-    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_A
-    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_B
-    L298N_A --> M1
-    L298N_A --> M2
-    L298N_B --> M3
-    L298N_B --> M4
+    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N
+    L298N --> M1
+    L298N --> M2
 
-    PICO_RX -->|"GPIO HIGH/LOW"| RELAY
+    PICO_RX -->|"GPIO OUT / GP8"| RELAY
     RELAY -->|"5V chaveado"| PUMP
-    PUMP -->|"pressuriza"| RESERV
-    RESERV -->|"contato elétrico"| SENSOR
-    SENSOR -->|"tensão analógica"| PICO_RX
-
+    
+    SENSOR_A -->|"analog"| PICO_RX
+    SENSOR_D -->|"digital"| PICO_RX
     PICO_RX -->|"GPIO OUT"| LED
-    PICO_RX -->|"GPIO OUT"| BUZZ
         </div>
       </div>
     </section>
@@ -852,27 +841,21 @@ stateDiagram-v2
         <table class="pin-table">
           <thead><tr><th>Pino</th><th>GPIO</th><th>Periférico</th><th>Tipo</th><th>Descrição</th></tr></thead>
           <tbody>
-            <tr><td><span class="pin-code">GP2</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
-            <tr><td><span class="pin-code">GP3</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
-            <tr><td><span class="pin-code">GP4</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
-            <tr><td><span class="pin-code">GP5</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
-            <tr><td><span class="pin-code">GP6</span></td><td>9</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
-            <tr><td><span class="pin-code">GP8</span></td><td>11</td><td>L298N #1</td><td><span class="pin-pwm">PWM</span></td><td>ENA — velocidade Motor 1</td></tr>
-            <tr><td><span class="pin-code">GP9</span></td><td>12</td><td>L298N #1</td><td><span class="pin-pwm">PWM</span></td><td>ENB — velocidade Motor 2</td></tr>
-            <tr><td><span class="pin-code">GP10</span></td><td>14</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN1 — direção Motor 1</td></tr>
-            <tr><td><span class="pin-code">GP11</span></td><td>15</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN2 — direção Motor 1</td></tr>
-            <tr><td><span class="pin-code">GP12</span></td><td>16</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN3 — direção Motor 2</td></tr>
-            <tr><td><span class="pin-code">GP13</span></td><td>17</td><td>L298N #1</td><td><span class="pin-gpio">GPIO</span></td><td>IN4 — direção Motor 2</td></tr>
-            <tr><td><span class="pin-code">GP16</span></td><td>21</td><td>L298N #2</td><td><span class="pin-pwm">PWM</span></td><td>ENA — velocidade Motor 3</td></tr>
-            <tr><td><span class="pin-code">GP17</span></td><td>22</td><td>L298N #2</td><td><span class="pin-pwm">PWM</span></td><td>ENB — velocidade Motor 4</td></tr>
-            <tr><td><span class="pin-code">GP18</span></td><td>24</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN1 — direção Motor 3</td></tr>
-            <tr><td><span class="pin-code">GP19</span></td><td>25</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN2 — direção Motor 3</td></tr>
-            <tr><td><span class="pin-code">GP20</span></td><td>26</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN3 — direção Motor 4</td></tr>
-            <tr><td><span class="pin-code">GP21</span></td><td>27</td><td>L298N #2</td><td><span class="pin-gpio">GPIO</span></td><td>IN4 — direção Motor 4</td></tr>
-            <tr><td><span class="pin-code">GP22</span></td><td>29</td><td>Relé 5V</td><td><span class="pin-gpio">GPIO</span></td><td>Sinal de controle da bomba</td></tr>
-            <tr><td><span class="pin-code">GP26</span></td><td>31</td><td>Sensor Nível</td><td><span class="pin-adc">ADC0</span></td><td>Leitura de nível do reservatório</td></tr>
-            <tr><td><span class="pin-code">GP27</span></td><td>32</td><td>LED alerta</td><td><span class="pin-gpio">GPIO</span></td><td>Indicador nível baixo</td></tr>
-            <tr><td><span class="pin-code">GP28</span></td><td>34</td><td>Buzzer</td><td><span class="pin-gpio">GPIO</span></td><td>Alerta sonoro</td></tr>
+            <tr><td><span class="pin-code">GP0</span></td><td>0</td><td>L298N</td><td><span class="pin-gpio">GPIO</span></td><td>IN1 — direção Motor Esq</td></tr>
+            <tr><td><span class="pin-code">GP1</span></td><td>1</td><td>L298N</td><td><span class="pin-gpio">GPIO</span></td><td>IN2 — direção Motor Esq</td></tr>
+            <tr><td><span class="pin-code">GP2</span></td><td>2</td><td>L298N</td><td><span class="pin-gpio">GPIO</span></td><td>IN3 — direção Motor Dir</td></tr>
+            <tr><td><span class="pin-code">GP3</span></td><td>3</td><td>L298N</td><td><span class="pin-gpio">GPIO</span></td><td>IN4 — direção Motor Dir</td></tr>
+            <tr><td><span class="pin-code">GP4</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
+            <tr><td><span class="pin-code">GP5</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
+            <tr><td><span class="pin-code">GP6</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
+            <tr><td><span class="pin-code">GP7</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
+            <tr><td><span class="pin-code">GP8</span></td><td>8</td><td>Relé Bomba</td><td><span class="pin-gpio">GPIO</span></td><td>Sinal de controle da bomba</td></tr>
+            <tr><td><span class="pin-code">GP9</span></td><td>9</td><td>L298N</td><td><span class="pin-pwm">PWM</span></td><td>ENA — velocidade Motor Esq</td></tr>
+            <tr><td><span class="pin-code">GP10</span></td><td>10</td><td>L298N</td><td><span class="pin-pwm">PWM</span></td><td>ENB — velocidade Motor Dir</td></tr>
+            <tr><td><span class="pin-code">GP12</span></td><td>12</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
+            <tr><td><span class="pin-code">GP13</span></td><td>13</td><td>LED Indicador</td><td><span class="pin-gpio">GPIO</span></td><td>Status sinal / Pareamento</td></tr>
+            <tr><td><span class="pin-code">GP22</span></td><td>22</td><td>Sensor Nível (D)</td><td><span class="pin-gpio">GPIO IN</span></td><td>Alerta digital (nível crítico)</td></tr>
+            <tr><td><span class="pin-code">GP27</span></td><td>27</td><td>Sensor Nível (A)</td><td><span class="pin-adc">ADC1</span></td><td>Leitura analógica do nível</td></tr>
           </tbody>
         </table>
       </div>
@@ -882,15 +865,16 @@ stateDiagram-v2
         <table class="pin-table">
           <thead><tr><th>Pino</th><th>GPIO</th><th>Periférico</th><th>Tipo</th><th>Descrição</th></tr></thead>
           <tbody>
-            <tr><td><span class="pin-code">GP2</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
-            <tr><td><span class="pin-code">GP3</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
-            <tr><td><span class="pin-code">GP4</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
-            <tr><td><span class="pin-code">GP5</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
-            <tr><td><span class="pin-code">GP6</span></td><td>9</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
-            <tr><td><span class="pin-code">GP14</span></td><td>19</td><td>Botão Bomba</td><td><span class="pin-gpio">GPIO IN</span></td><td>Pull-up interno — LOW = pressionado</td></tr>
-            <tr><td><span class="pin-code">GP15</span></td><td>20</td><td>Botão Stop</td><td><span class="pin-gpio">GPIO IN</span></td><td>Pull-up interno — LOW = pressionado</td></tr>
-            <tr><td><span class="pin-code">GP26</span></td><td>31</td><td>Joystick X</td><td><span class="pin-adc">ADC0</span></td><td>Eixo horizontal (esquerda/direita)</td></tr>
-            <tr><td><span class="pin-code">GP27</span></td><td>32</td><td>Joystick Y</td><td><span class="pin-adc">ADC1</span></td><td>Eixo vertical (avanço/recuo)</td></tr>
+            <tr><td><span class="pin-code">GP0</span></td><td>0</td><td>Display OLED</td><td><span class="pin-gpio">I2C SDA</span></td><td>Dados I2C</td></tr>
+            <tr><td><span class="pin-code">GP1</span></td><td>1</td><td>Display OLED</td><td><span class="pin-gpio">I2C SCL</span></td><td>Clock I2C</td></tr>
+            <tr><td><span class="pin-code">GP4</span></td><td>4</td><td>NRF24L01</td><td><span class="pin-spi">SPI MISO</span></td><td>Dados entrada</td></tr>
+            <tr><td><span class="pin-code">GP5</span></td><td>5</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CSn — Chip Select</td></tr>
+            <tr><td><span class="pin-code">GP6</span></td><td>6</td><td>NRF24L01</td><td><span class="pin-spi">SPI SCK</span></td><td>Clock SPI0</td></tr>
+            <tr><td><span class="pin-code">GP7</span></td><td>7</td><td>NRF24L01</td><td><span class="pin-spi">SPI MOSI</span></td><td>Dados saída</td></tr>
+            <tr><td><span class="pin-code">GP9</span></td><td>9</td><td>NRF24L01</td><td><span class="pin-gpio">GPIO</span></td><td>CE — Chip Enable</td></tr>
+            <tr><td><span class="pin-code">GP19</span></td><td>19</td><td>Botão Bomba</td><td><span class="pin-gpio">GPIO IN</span></td><td>Pull-up interno — LOW = pressionado</td></tr>
+            <tr><td><span class="pin-code">GP26</span></td><td>26</td><td>Joystick Y</td><td><span class="pin-adc">ADC1</span></td><td>Eixo vertical (avanço/recuo)</td></tr>
+            <tr><td><span class="pin-code">GP27</span></td><td>27</td><td>Joystick X</td><td><span class="pin-adc">ADC0</span></td><td>Eixo horizontal (esquerda/direita)</td></tr>
           </tbody>
         </table>
       </div>

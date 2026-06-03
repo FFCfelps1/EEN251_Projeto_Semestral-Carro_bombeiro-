@@ -17,9 +17,9 @@
 ║   │    3,7 V     │       │                           │   ║
 ║   └──────────────┘       │  ADC0 ◀── Joystick Eixo X │   ║
 ║                          │  ADC1 ◀── Joystick Eixo Y │   ║
-║                          │  GP14 ◀── Botão Bomba     │   ║
-║                          │  GP15 ◀── Botão Stop      │   ║
-║                          │  SPI0 ──▶ NRF24L01 (TX)   │   ║
+║   ┌──────────────┐       │  GP19 ◀── Botão Bomba     │   ║
+║   │ OLED SSD1306 │◀─────▶│  I2C0 ──▶ Display Status  │   ║
+║   └──────────────┘       │  SPI0 ──▶ NRF24L01 (TX)   │   ║
 ║                          └───────────────────────────┘   ║
 ║                                        │                 ║
 ║                              NRF24L01 ─┘                 ║
@@ -36,31 +36,27 @@
 ║   ┌───────────────┐       ┌───────────▼───────────────┐  ║
 ║   │  Bateria 2S   │──────▶│  Raspberry Pi Pico (RX)   │  ║
 ║   │   7,4 V       │       │                           │  ║
-║   └───┬───────────┘       │  GP8  PWM ──▶ L298N #1    │  ║
-║       │                   │  GP9  PWM ──▶ L298N #1    │  ║
-║       ▼                   │  GP10–13 ──▶ L298N #1     │  ║
-║  ┌──────────────┐          │  GP16 PWM ──▶ L298N #2    │  ║
-║  │ Regulador   │          │  GP17 PWM ──▶ L298N #2    │  ║
-║  │ 7,4V → 5V  │          │  GP18–21 ──▶ L298N #2     │  ║
-║  └──────┬───────┘          │  GP22     ──▶ Relé 5V     │  ║
-║         │                  │  GP26 ADC ◀── Sensor Nív. │  ║
-║         │                  │  GP27     ──▶ LED Alerta  │  ║
-║         │                  │  GP28     ──▶ Buzzer      │  ║
+║   └───┬───────────┘       │  GP0, 1 ──▶ IN1, IN2 (Mot)│  ║
+║       │                   │  GP2, 3 ──▶ IN3, IN4 (Mot)│  ║
+║       ▼                   │  GP9, 10──▶ ENA, ENB (PWM)│  ║
+║  ┌──────────────┐          │  GP8     ──▶ Relé Bomba   │  ║
+║  │ Regulador   │          │  GP27 ADC ◀── Sensor Nív. │  ║
+║  │ 7,4V → 5V  │          │  GP22     ◀── Sensor (D)   │  ║
+║  └──────┬───────┘          │  GP13     ──▶ LED Status  │  ║
 ║         │                  └───────────────────────────┘  ║
 ║         │                                                  ║
 ║         ├──────────────────────────────────────────────┐  ║
 ║         │                                              │  ║
 ║         ▼                    ▼                         ▼  ║
 ║   ┌──────────┐        ┌───────────┐            ┌──────────┐║
-║   │ L298N #1 │        │ L298N #2  │            │  Relé 5V ││
-║   │          │        │           │            └──────────┘║
-║   └──┬────┬──┘        └──┬─────┬──┘                 │     ║
-║      │    │              │     │                    ▼     ║
-║      ▼    ▼              ▼     ▼             ┌──────────┐  ║
-║   Motor1 Motor2       Motor3 Motor4          │  Bomba   │  ║
-║   (D.Esq)(T.Esq)     (D.Dir)(T.Dir)         │ d'água   │  ║
-║                                             └─────┬────┘  ║
-║                                                   │       ║
+║   │ Driver   │        │   Relé    │            │  Bomba   │║
+║   │  L298N   │        │    5V     │            │ d'água   │║
+║   └──┬────┬──┘        └─────┬─────┘            └─────┬────┘║
+║      │    │                 │                        │     ║
+║      ▼    ▼                 ▼                        ▼     ║
+║   Motores Esq        Motores Dir               Jato d'água ║
+║   (4WD)              (4WD)                                 ║
+║                                                            ║
 ║                                             ┌─────▼────┐  ║
 ║                          Sensor Nível ◀─────│Reservat. │  ║
 ║                                             └──────────┘  ║
@@ -75,10 +71,10 @@
 graph TD
     BAT_TX["🔋 Bateria LiPo\n3,7V"]
     PICO_TX["⚙️ Raspberry Pi Pico TX\n(RP2040)"]
-    JOY_X["🕹️ Joystick — Eixo X\n(ADC0 / GP26)"]
-    JOY_Y["🕹️ Joystick — Eixo Y\n(ADC1 / GP27)"]
-    BTN1["🔴 Botão Bomba\n(GP14 — pull-up)"]
-    BTN2["⛔ Botão Stop/Emergência\n(GP15 — pull-up)"]
+    JOY_X["🕹️ Joystick — Eixo X\n(ADC0 / GP27)"]
+    JOY_Y["🕹️ Joystick — Eixo Y\n(ADC1 / GP26)"]
+    BTN1["🔴 Botão Bomba\n(GP19 — pull-up)"]
+    OLED["🖥️ Display OLED\n(I2C0 / GP0, 1)"]
     NRF_TX["📡 NRF24L01\n(SPI0 | PTX mode)"]
     RF["≋≋≋ RF 2,4 GHz ≋≋≋\nEnhanced ShockBurst"]
 
@@ -86,9 +82,9 @@ graph TD
     JOY_X -->|"ADC 0–3,3V"| PICO_TX
     JOY_Y -->|"ADC 0–3,3V"| PICO_TX
     BTN1 -->|"GPIO LOW = pressionado"| PICO_TX
-    BTN2 -->|"GPIO LOW = pressionado"| PICO_TX
+    PICO_TX -->|"I2C SDA/SCL"| OLED
     PICO_TX -->|"SPI: SCK/MOSI/MISO/CS/CE"| NRF_TX
-    NRF_TX -->|"Pacote 6 bytes @ ~50Hz"| RF
+    NRF_TX -->|"Pacote 4 bytes @ ~12Hz"| RF
 ```
 
 ---
@@ -102,43 +98,33 @@ graph TD
     PICO_RX["⚙️ Raspberry Pi Pico RX\n(RP2040)"]
     RF_IN["≋≋≋ RF 2,4 GHz ≋≋≋"]
     NRF_RX["📡 NRF24L01\n(SPI0 | PRX mode)"]
-    L298N_A["🔧 L298N #1\n(Lado Esquerdo)"]
-    L298N_B["🔧 L298N #2\n(Lado Direito)"]
-    M1["⚙ Motor 1\nDianteiro Esq."]
-    M2["⚙ Motor 2\nTraseiro Esq."]
-    M3["⚙ Motor 3\nDianteiro Dir."]
-    M4["⚙ Motor 4\nTraseiro Dir."]
-    RELAY["🔌 Relé 5V\n(1 canal)"]
+    L298N["🔧 Driver L298N\n(Motores)"]
+    M1["⚙ Motor Esq.\nDiant + Tras"]
+    M2["⚙ Motor Dir.\nDiant + Tras"]
+    RELAY["🔌 Relé 5V\n(Bomba)"]
     PUMP["💧 Mini Bomba d'água\n3–6V DC"]
-    RESERV["🪣 Reservatório\n~150 mL"]
-    SENSOR["📊 Sensor de Nível\n(ADC / GP26)"]
-    LED["💡 LED Vermelho\nAlerta Nível Baixo"]
-    BUZZ["🔊 Buzzer\nAlerta Sonoro"]
+    SENSOR_A["📊 Sensor Nível (A)\nADC / GP27"]
+    SENSOR_D["🚨 Alerta Nível (D)\nGPIO / GP22"]
+    LED["💡 LED Indicador\nStatus RF / GP13"]
 
     BAT_RX -->|"7,4V"| REG
-    REG -->|"5V"| L298N_A
-    REG -->|"5V"| L298N_B
+    REG -->|"5V"| L298N
     REG -->|"5V"| RELAY
     REG -->|"3,3V via Pico VSYS"| PICO_RX
 
     RF_IN -->|"pacote recebido"| NRF_RX
     NRF_RX -->|"SPI: interrupção IRQ"| PICO_RX
 
-    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_A
-    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N_B
-    L298N_A --> M1
-    L298N_A --> M2
-    L298N_B --> M3
-    L298N_B --> M4
+    PICO_RX -->|"PWM ENA/ENB + IN1–IN4"| L298N
+    L298N --> M1
+    L298N --> M2
 
-    PICO_RX -->|"GPIO HIGH/LOW"| RELAY
+    PICO_RX -->|"GPIO OUT / GP8"| RELAY
     RELAY -->|"5V chaveado"| PUMP
-    PUMP -->|"pressuriza"| RESERV
-    RESERV -->|"contato elétrico"| SENSOR
-    SENSOR -->|"tensão analógica"| PICO_RX
-
+    
+    SENSOR_A -->|"analog"| PICO_RX
+    SENSOR_D -->|"digital"| PICO_RX
     PICO_RX -->|"GPIO OUT"| LED
-    PICO_RX -->|"GPIO OUT"| BUZZ
 ```
 
 ---
@@ -191,11 +177,9 @@ stateDiagram-v2
 │    1    │  vel_dir  — int8  — velocidade lado dir. (−100..+100) │
 │    2    │  bomba    — uint8 — 0=OFF, 1=ON                   │
 │    3    │  stop     — uint8 — 0=normal, 1=parada emergência │
-│    4    │  reservado                                        │
-│    5    │  reservado                                        │
 └─────────┴──────────────────────────────────────────────────┘
-Tamanho total: 6 bytes (campo fixo — NRF24L01 static payload)
-Taxa: ~50 pacotes/segundo (período de 20 ms no TX)
+Tamanho total: 4 bytes (campo fixo — NRF24L01 static payload)
+Taxa: ~12 pacotes/segundo (conforme configurado no firmware)
 ```
 
 ---
@@ -205,14 +189,13 @@ Taxa: ~50 pacotes/segundo (período de 20 ms no TX)
 ```
 Bateria 2S (7,4V)
        │
-       ├──[Regulador DC-DC MP1584]──→ 5V ──┬── L298N #1 (VCC lógico)
-       │                                   ├── L298N #2 (VCC lógico)
+       ├──[Regulador DC-DC MP1584]──→ 5V ──┬── L298N (VCC lógico)
        │                                   ├── Relé 5V (bobina)
        │                                   └── Pico (VSYS → regulador 3,3V interno)
        │                                            │
        │                                           3,3V ──── NRF24L01 VCC
        │
-       └──[Direto 7,4V]──→ L298N #1 e #2 (pino VS — potência dos motores)
+       └──[Direto 7,4V]──→ L298N (pino VS — potência dos motores)
                            (corrente pico ~2A por driver, 4A total)
 ```
 

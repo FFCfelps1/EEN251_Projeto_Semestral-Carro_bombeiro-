@@ -28,12 +28,24 @@
 
 | Nome | RA | Função Principal |
 |------|----|-----------------|
-| [Nome 1] | [RA] | Firmware do Receptor (Pico RX) — motores e bomba |
-| [Nome 2] | [RA] | Firmware do Transmissor (Pico TX) — controle RF |
-| [Nome 3] | [RA] | Hardware — montagem do chassi e fiação |
-| [Nome 4] | [RA] | Integração do sistema e documentação |
+| Felipe Fazio da Costa | 23.00055-4 | Firmware do Receptor (Pico RX) — motores e bomba |
+| João Gabriel Fioruci Roberto | 23.00617-0 | Firmware do Transmissor (Pico TX) — controle RF |
+| Gabriel Rodrigues Marques | 23.00578-5 | Hardware — montagem do chassi e fiação |
+| Fábio Sadao Sato | 22.00984-0 | Integração do sistema e documentação |
 
-> Preencher com os dados reais do grupo.
+---
+
+## Resumo
+
+Este relatório descreve o desenvolvimento de um protótipo de carro de bombeiro teleoprado utilizando microcontroladores Raspberry Pi Pico e comunicação via rádio frequência (NRF24L01). O sistema integra tração 4WD, sistema de combate a incêndio por bomba d'água e monitoramento de nível de reservatório. Foram aplicados conceitos de sistemas embarcados, comunicação sem fio e controle de periféricos via PWM. Os resultados demonstram a eficácia da plataforma RP2040 em aplicações de controle em tempo real e teleoperação robusta.
+
+**Palavras-chave**: Raspberry Pi Pico. NRF24L01. MicroPython. Carro de Bombeiro. Sistemas Embarcados.
+
+## Abstract
+
+This report describes the development of a teleoperated fire truck prototype using Raspberry Pi Pico microcontrollers and radio frequency communication (NRF24L01). The system integrates 4WD traction, a water pump fire suppression system, and reservoir level monitoring. Concepts of embedded systems, wireless communication, and peripheral control via PWM were applied. The results demonstrate the effectiveness of the RP2040 platform in real-time control applications and robust teleoperation.
+
+**Keywords**: Raspberry Pi Pico. NRF24L01. MicroPython. Fire Truck. Embedded Systems.
 
 ---
 
@@ -43,7 +55,7 @@ O projeto consiste no desenvolvimento de um veículo robótico em escala inspira
 
 O sistema é dividido em dois blocos principais:
 
-- **Transmissor (controle remoto):** baseado em um Raspberry Pi Pico com joystick analógico e botões, responsável por capturar os comandos do operador e enviá-los via NRF24L01.
+- **Transmissor (controle remoto):** baseado em um Raspberry Pi Pico com joystick analógico, botões e display OLED SSD1306, responsável por capturar os comandos do operador e enviá-los via NRF24L01.
 - **Receptor (carro):** baseado em um segundo Raspberry Pi Pico que recebe os pacotes RF, interpreta os comandos e aciona os motores, a bomba e os alertas de nível.
 
 Todo o firmware é desenvolvido em **MicroPython**, aproveitando a plataforma Raspberry Pi Pico (microcontrolador RP2040).
@@ -52,17 +64,14 @@ Todo o firmware é desenvolvido em **MicroPython**, aproveitando a plataforma Ra
 
 ## 3. Objetivos
 
-### 3.1 Objetivo Geral
+O objetivo geral deste trabalho é projetar e construir um veículo robótico controlado remotamente via radiofrequência, capaz de realizar manobras de locomoção e acionamento de uma bomba d'água, com monitoramento de status em tempo real.
 
-Projetar, construir e programar um carro de bombeiro em miniatura, teleoprado por radiofrequência, com sistema de bombeamento de água e monitoramento do nível do reservatório, utilizando a plataforma Raspberry Pi Pico como controlador central.
+### 3.1 Objetivos Específicos
 
-### 3.2 Objetivos Específicos
-
-- Implementar comunicação bidirecional RF 2.4 GHz entre controle e veículo utilizando o módulo NRF24L01.
-- Controlar a velocidade e direção de quatro motores DC via PWM (diferencial de velocidade — tank drive).
-- Acionar remotamente uma mini bomba d'água via relé para simular o combate a incêndios.
-- Monitorar em tempo real o nível do reservatório de água, com alertas visuais (LED) e sonoros (buzzer).
-- Documentar todo o processo de desenvolvimento: hardware, firmware e validação do sistema.
+- Implementação de comunicação bidirecional robusta entre controle e veículo;
+- Controle de tração diferencial (tank drive) para quatro motores;
+- Sistema de alerta de nível de água com indicadores visuais e sonoros;
+- Desenvolvimento de firmware em MicroPython para a plataforma Raspberry Pi Pico.
 
 ---
 
@@ -154,31 +163,36 @@ Onde Y = eixo vertical (avanço/recuo) e X = eixo horizontal (giro). Valores lim
 
 | Pino | GPIO | Periférico | Sinal | Obs. |
 |------|:----:|-----------|-------|------|
-| GP2 | 4 | NRF24L01 | SCK (SPI0) | Clock SPI |
-| GP3 | 5 | NRF24L01 | MOSI (SPI0) | Dados saída |
-| GP4 | 6 | NRF24L01 | MISO (SPI0) | Dados entrada |
+| GP0 | 0 | L298N | IN1 | Direção Motor Esq |
+| GP1 | 1 | L298N | IN2 | Direção Motor Esq |
+| GP2 | 2 | L298N | IN3 | Direção Motor Dir |
+| GP3 | 3 | L298N | IN4 | Direção Motor Dir |
+| GP4 | 4 | NRF24L01 | MISO (SPI0) | Dados entrada |
 | GP5 | 7 | NRF24L01 | CSn | Chip Select |
-| GP6 | 9 | NRF24L01 | CE | Chip Enable |
-| GP8 | 11 | L298N #1 | ENA (PWM) | Vel. Motor 1 |
-| GP9 | 12 | L298N #1 | ENB (PWM) | Vel. Motor 2 |
-| GP10–GP13 | 14–17 | L298N #1 | IN1–IN4 | Direção Motores 1/2 |
-| GP16 | 21 | L298N #2 | ENA (PWM) | Vel. Motor 3 |
-| GP17 | 22 | L298N #2 | ENB (PWM) | Vel. Motor 4 |
-| GP18–GP21 | 24–27 | L298N #2 | IN1–IN4 | Direção Motores 3/4 |
-| GP22 | 29 | Relé 5V | Sinal | Ativa bomba |
-| GP26 | 31 | Sensor nível | ADC0 | Leitura analógica |
-| GP27 | 32 | LED alerta | GPIO OUT | Nível baixo |
-| GP28 | 34 | Buzzer | GPIO OUT | Alerta sonoro |
+| GP6 | 4 | NRF24L01 | SCK (SPI0) | Clock SPI |
+| GP7 | 11 | NRF24L01 | MOSI (SPI0) | Dados saída |
+| GP8 | 29 | Relé Bomba | Sinal | Ativa bomba |
+| GP9 | 11 | L298N | ENA (PWM) | Vel. Motor Esq |
+| GP10 | 12 | L298N | ENB (PWM) | Vel. Motor Dir |
+| GP12 | 6 | NRF24L01 | CE | Chip Enable |
+| GP13 | 32 | LED Indicador | GPIO OUT | Status sinal |
+| GP22 | 34 | Sensor Nível (D) | GPIO IN | Alerta digital |
+| GP27 | 31 | Sensor Nível (A) | ADC1 | Leitura analógica |
 
 ### Transmissor — Raspberry Pi Pico (TX)
 
 | Pino | GPIO | Periférico | Sinal | Obs. |
 |------|:----:|-----------|-------|------|
-| GP2–GP6 | 4–9 | NRF24L01 | SPI0 + CE/CSn | Igual ao RX |
-| GP14 | 19 | Botão Bomba | GPIO IN | Pull-up interno |
-| GP15 | 20 | Botão Stop | GPIO IN | Pull-up interno |
-| GP26 | 31 | Joystick X | ADC0 | Eixo horizontal |
-| GP27 | 32 | Joystick Y | ADC1 | Eixo vertical |
+| GP0 | 0 | Display OLED | I2C SDA | Dados I2C |
+| GP1 | 1 | Display OLED | I2C SCL | Clock I2C |
+| GP4 | 6 | NRF24L01 | MISO (SPI0) | Dados entrada |
+| GP5 | 7 | NRF24L01 | CSn | Chip Select |
+| GP6 | 4 | NRF24L01 | SCK (SPI0) | Clock SPI |
+| GP7 | 5 | NRF24L01 | MOSI (SPI0) | Dados saída |
+| GP9 | 9 | NRF24L01 | CE | Chip Enable |
+| GP19 | 19 | Botão Bomba | GPIO IN | Pull-up interno |
+| GP26 | 32 | Joystick Y | ADC1 | Eixo vertical |
+| GP27 | 31 | Joystick X | ADC0 | Eixo horizontal |
 
 > ⚠️ **Atenção:** O NRF24L01 opera em **3,3 V**. Nunca conecte o VCC ao pino 5V.
 
