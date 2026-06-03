@@ -1,6 +1,6 @@
-\backcite {rp2040:datasheet}{{7}{2.2}{section.2.2}}
-\backcite {pico:datasheet}{{7}{2.2}{section.2.2}}
-\backcite {l298n:datasheet}{{7}{2.2.2}{subsection.2.2.2}}
-\backcite {nrf24l01:product}{{7}{2.3}{section.2.3}}
-\backcite {nrf24l01:library}{{7}{2.3}{section.2.3}}
-\backcite {micropython:docs}{{8}{2.4}{section.2.4}}
+\backcite {rp2040:datasheet}{{8}{2.2}{section.2.2}}
+\backcite {pico:datasheet}{{8}{2.2}{section.2.2}}
+\backcite {l298n:datasheet}{{8}{2.2.2}{subsection.2.2.2}}
+\backcite {nrf24l01:product}{{8}{2.3}{section.2.3}}
+\backcite {nrf24l01:library}{{8}{2.3}{section.2.3}}
+\backcite {micropython:docs}{{9}{2.4}{section.2.4}}

@@ -1,32 +1,39 @@
 # Fdb version 4
-["bibtex main"] 1780496121.10846 "main.aux" "main.bbl" "main" 1780496127.26578 0
+["bibtex main"] 1780515144.34068 "main.aux" "main.bbl" "main" 1780515154.63509 0
   "./referencias.bib" 1780440401 1643 3b5c83d6eb1244231d4f2cccbe5bf079 ""
   "c:/texlive/2026/texmf-dist/bibtex/bib/abntex2/abntex2-options.bib" 1777329118 5396 4eb260dac60f150ae608d45252853090 ""
   "c:/texlive/2026/texmf-dist/bibtex/bst/abntex2/abntex2-alf.bst" 1777329118 60064 0819ac8568f9a482510a46e3a8a6f605 ""
-  "main.aux" 1780496125 19503 81959fa1d45006dddc8d3e9adbbc2a66 "pdflatex"
+  "main.aux" 1780515151 24825 5523db74d782e65a6ad9e6239072f8e4 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["makeindex main.idx"] 1780440402.89853 "main.idx" "main.ind" "main" 1780496127.26506 0
-  "main.idx" 1780496123 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+["makeindex main.idx"] 1780515134.00698 "main.idx" "main.ind" "main" 1780515154.63404 0
+  "main.idx" 1780515147 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   (generated)
   "main.ilg"
   "main.ind"
   (rewritten before read)
-["pdflatex"] 1780496121.73548 "c:/Users/felip/Desktop/GitHub/EEN251_Projeto_Semestral(Carro_bombeiro)/docs/documentacao_latex/main.tex" "main.pdf" "main" 1780496127.26671 0
+["pdflatex"] 1780515145.19925 "c:/Users/felip/Desktop/GitHub/EEN251_Projeto_Semestral(Carro_bombeiro)/docs/documentacao_latex/main.tex" "main.pdf" "main" 1780515154.6361 0
   "../../Esquemas elétricos/Carro/Esquema PCB 3D.png" 1780433357 215694 64c710f470411f0f6f50ae2482138ebe ""
   "../../Esquemas elétricos/Carro/Esquema PCB.pdf" 1780433404 435148 c9dad403279672731ad6a98518b95f05 ""
   "../../Esquemas elétricos/Carro/Esquema elétrico.pdf" 1780433294 147699 2bc1e48e88a5e1f0139d7277f16752f4 ""
+  "../../Esquemas elétricos/Carro/Mudança tecnica bomba d'agua.jpeg" 1780514202 57908 7afa09e24fe3584e4c7144ad34bbe7ae ""
   "../../Esquemas elétricos/Controle/Esquema PCB 3D.jpeg" 1780494789 37726 6e5b14e65fc7917c0d132bbf5abbc054 ""
   "../../Esquemas elétricos/Controle/Esquema PCB.pdf" 1780494875 37985 7255490f1c7cb9c8d2c8a1be50ade587 ""
   "../../Esquemas elétricos/Controle/controle_bombeiro.pdf" 1780494622 118501 157000725d7fb0d5b40f120c34af77c8 ""
+  "../../Fotos carro/Foto do carro com a eletronica aberta.jpeg" 1780514361 124945 d76df0422fd382143e229efbcbab2b6d ""
+  "../../Fotos carro/Foto do carro fechado 2.jpeg" 1780514361 81513 3f67e92e54e6e230527caaee9b376125 ""
+  "../../Fotos carro/Foto do carro fechado.jpeg" 1780514361 91361 5dd15b68045c7ba989d974467e087b6f ""
+  "../../Fotos carro/Foto do carro parte de baixo com motores.jpeg" 1780514430 118922 3172fc5cd26cb6eed7961262cdb16915 ""
+  "../../Fotos carro/Foto do controle com a eletronica aberta.jpeg" 1780514444 164830 8ce7659103ed1d38d7e6ae112f6bff09 ""
+  "../../Fotos carro/Foto do controle fechado.jpeg" 1780514456 138750 a10ba8cdd0316361f71759669af5edce ""
   "../../Modelos 3D Solid/Carro.png" 1780437480 172247 243c8575b6d85eb778e5b926879cf45f ""
   "../../Modelos 3D Solid/Controle Base.png" 1780437443 132303 f15782dc07706a079221a3aa57a9856d ""
   "../../Modelos 3D Solid/Controle Tampa.png" 1780437410 145626 e378aa808d4c95873c62147034bc39e3 ""
   "../../src/carro de bombeiro/carro.py" 1779999992 7238 1194d17e9495c5143e749cfdc9c3518e ""
-  "../../src/controle/controle.py" 1780431543 12369 c3249746629c407de1066b606b932031 ""
-  "c:/Users/felip/Desktop/GitHub/EEN251_Projeto_Semestral(Carro_bombeiro)/docs/documentacao_latex/main.tex" 1780496084 15672 9aa7e77367f27ea5499af51c2def9e90 ""
+  "../../src/controle/controle.py" 1780513797 10285 984820de79e97a12702dbc6db82821fa ""
+  "c:/Users/felip/Desktop/GitHub/EEN251_Projeto_Semestral(Carro_bombeiro)/docs/documentacao_latex/main.tex" 1780515132 21735 fe98545852458083951f4b6a87d2ae36 ""
   "c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc" 1777340372 2375 baa924870cfb487815765f9094cf3728 ""
   "c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc" 1777340372 2840 216e6e45ad352e2456e1149f28885bee ""
   "c:/texlive/2026/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc" 1777340372 3031 6c4d3515bf7115d8518af1c9ab97ca44 ""
@@ -39,6 +46,7 @@
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmr8.tfm" 1777340372 12064 9b9ade9f64cb32ce1d9a88d21fbd5c2d ""
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmr9.tfm" 1777340372 12084 b7f5e4c003de6f57f07c7e9fee73a37c ""
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmri10.tfm" 1777340372 17148 9556e1b5f936b77a796f68d2d559ba99 ""
+  "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmri12.tfm" 1777340372 17144 271aaf9ebb339934b04110dc5211fba4 ""
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmss12.tfm" 1777340372 11232 955a7245396175d9219648eadc654ac9 ""
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmss17.tfm" 1777340372 11252 57c8b53a3aeebba8c17658d4221d47ec ""
   "c:/texlive/2026/texmf-dist/fonts/tfm/public/lm/ec-lmssbx10.tfm" 1777340372 11168 06d87f5698fd1b642d96449b7c8d90b0 ""
@@ -69,6 +77,7 @@
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmr8.pfb" 1777340373 122174 a2d5e73f396ddbeb3bdf5c79aea0993d ""
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmr9.pfb" 1777340373 121065 ba8daf2228d9e511988917831f1e22e9 ""
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmri10.pfb" 1777340373 112593 fda2373ba4420af33949610de4c28fe8 ""
+  "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmri12.pfb" 1777340373 109265 e6c7d377db6dfccd4a123fb26da8cffb ""
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmss12.pfb" 1777340373 96107 daf52840b555e3b38f9679b629b5e2df ""
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmss17.pfb" 1777340373 97155 ffb6880a68751002f414154d64548ca3 ""
   "c:/texlive/2026/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb" 1777340373 119663 1a3a2206591ddc98c6d6c6271a282516 ""
@@ -258,12 +267,12 @@
   "c:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1777345888 5619402 045890036aad9b52b154ef5568e59d3a ""
   "c:/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1777346022 3648444 277f0edeb2439d55f2190d4bfee62c50 ""
   "c:/texlive/2026/texmf.cnf" 1777345851 713 e69b156964470283e0530f5060668171 ""
-  "main.aux" 1780496125 19503 81959fa1d45006dddc8d3e9adbbc2a66 "pdflatex"
-  "main.bbl" 1780496121 1998 1a0b0fa10438c8dc92f9b29a53998d5f "bibtex main"
-  "main.brf" 1780496125 316 10e463f244bb5cec1b8f410907776b19 "pdflatex"
-  "main.ind" 1780440403 0 d41d8cd98f00b204e9800998ecf8427e "makeindex main.idx"
-  "main.tex" 1780496084 15672 9aa7e77367f27ea5499af51c2def9e90 ""
-  "main.toc" 1780496125 4491 2c0f3c44fc786e20be337917166298f4 "pdflatex"
+  "main.aux" 1780515151 24825 5523db74d782e65a6ad9e6239072f8e4 "pdflatex"
+  "main.bbl" 1780515145 1998 1a0b0fa10438c8dc92f9b29a53998d5f "bibtex main"
+  "main.brf" 1780515151 316 67d6f710d2d6396836b8f0eecc4ad7c3 "pdflatex"
+  "main.ind" 1780515134 0 d41d8cd98f00b204e9800998ecf8427e "makeindex main.idx"
+  "main.tex" 1780515132 21735 fe98545852458083951f4b6a87d2ae36 ""
+  "main.toc" 1780515151 5373 7463443d7e3142265c42b4808d90a164 "pdflatex"
   (generated)
   "main.aux"
   "main.brf"

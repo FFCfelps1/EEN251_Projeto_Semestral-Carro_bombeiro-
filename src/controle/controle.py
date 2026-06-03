@@ -8,6 +8,7 @@ joy1_x = ADC(27)
 joy1_y = ADC(26)
 button = Pin(19, Pin.IN, Pin.PULL_UP)
 led    = Pin(25, Pin.OUT)
+umidade_atual = 100
 
 # ========================
 # I2C + DISPLAY OLED SSD1306
@@ -274,58 +275,6 @@ def normalize(value):
     return int((value - 32768) / 32768 * 100)
 
 # ========================
-# SIMULAÇÃO DE UMIDADE
-# ========================
-# Velocidade de queda: quantos % por segundo segurando o botão.
-# Ajuste conforme quiser — ex: 10 = cai 10% a cada segundo.
-UMIDADE_QUEDA_POR_SEG = 10.0
-
-umidade_sim       = 100       # Começa em 100% e só reseta ao religar
-btn_anterior      = 1         # Estado anterior do botão (1 = solto)
-btn_pressionado_t = None      # Timestamp de quando começou a pressionar
-
-def atualizar_umidade_simulada(btn_atual):
-    """
-    Atualiza a umidade simulada com base no estado do botão.
-
-    - btn_atual == 0  → botão pressionado (Pull-up ativo baixo)
-    - btn_atual == 1  → botão solto
-
-    Enquanto pressionado: diminui linearmente pelo tempo.
-    Ao soltar: congela no valor atual.
-    Ao pressionar de novo: continua de onde parou.
-    """
-    global umidade_sim, btn_anterior, btn_pressionado_t
-
-    agora = time.ticks_ms()
-
-    if btn_atual == 0:  # Botão pressionado
-        if btn_anterior == 1:
-            # Borda de descida: registra quando começou
-            btn_pressionado_t = agora
-
-        # Calcula quanto tempo está pressionado nesta sessão (ms → s)
-        tempo_pressionado_s = time.ticks_diff(agora, btn_pressionado_t) / 1000.0
-
-        # Calcula nova umidade baseada no tempo acumulado
-        nova = umidade_sim - (UMIDADE_QUEDA_POR_SEG * tempo_pressionado_s)
-        umidade_atual = max(0, int(nova))
-
-    else:  # Botão solto
-        if btn_anterior == 0:
-            # Borda de subida: congela o valor calculado no último frame
-            agora_antes = btn_pressionado_t
-            tempo_s = time.ticks_diff(agora, agora_antes) / 1000.0
-            nova = umidade_sim - (UMIDADE_QUEDA_POR_SEG * tempo_s)
-            umidade_sim = max(0, int(nova))  # Salva o valor congelado
-            btn_pressionado_t = None
-
-        umidade_atual = umidade_sim  # Retorna o valor congelado
-
-    btn_anterior = btn_atual
-    return umidade_atual
-
-# ========================
 # LOOP PRINCIPAL
 # ========================
 INTERVALO_TX = 80
@@ -343,9 +292,6 @@ while True:
         btn = button.value()
 
         led.value(1 if btn == 0 else 0)
-
-        # Atualiza umidade simulada
-        umidade_atual = atualizar_umidade_simulada(btn)
 
         # Determina status (AGUA se >= 30%, SECO abaixo)
         umidade_status = "AGUA" if umidade_atual >= 30 else "SECO"

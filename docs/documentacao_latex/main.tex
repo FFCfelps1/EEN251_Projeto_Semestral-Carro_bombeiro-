@@ -348,10 +348,89 @@ A Figura \ref{fig:pcb3d} ilustra a visualização 3D da PCB do carro, enquanto a
 	\legend{Fonte: Os autores (2026)}
 \end{figure}
 
+\chapter{Resultados e Discussão}
+
+Neste capítulo são detalhados os resultados práticos da construção do protótipo, analisando a estrutura física, a integração dos componentes eletrônicos e o desempenho do sistema em testes operacionais.
+
+\section{Protótipo do Veículo}
+
+O chassi do veículo, apresentado na Figura \ref{fig:carro_persp}, foi construído através de impressão 3D em material termoplástico, garantindo leveza e resistência estrutural. A mangueira de combate a incêndio foi fixada lateralmente, conectando a bomba submersa interna ao bocal frontal.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Protótipo Finalizado em Perspectiva}
+    \label{fig:carro_persp}
+    \includegraphics[width=0.7\textwidth]{../../Fotos carro/Foto do carro fechado.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+A vista superior (Figura \ref{fig:carro_vista_superior}) revela a segmentação interna do chassi. O compartimento frontal atua como reservatório de água, enquanto a seção traseira abriga a eletrônica de controle e as fontes de energia, protegidas por tampas removíveis que facilitam a manutenção e o reabastecimento.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Vista Superior Detalhando a Segmentação do Chassi}
+    \label{fig:carro_vista_superior}
+    \includegraphics[width=0.7\textwidth]{../../Fotos carro/Foto do carro fechado 2.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+\section{Unidade de Controle Remoto}
+
+A unidade de controle foi projetada com foco na ergonomia e funcionalidade. Internamente (Figura \ref{fig:interna_controle}), destaca-se a PCB de face simples confeccionada artesanalmente, que centraliza as conexões dos joysticks analógicos, do módulo NRF24L01 com antena externa e da bateria de lítio recarregável.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Montagem Interna da Unidade de Controle}
+    \label{fig:interna_controle}
+    \includegraphics[width=0.7\textwidth]{../../Fotos carro/Foto do controle com a eletronica aberta.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+Externamente (Figura \ref{fig:controle_final}), o controle apresenta um layout intuitivo. O display OLED centralizado fornece informações em tempo real sobre o status da conexão e o nível do reservatório, enquanto o interruptor tipo alavanca gerencia a alimentação do sistema.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Unidade de Controle Finalizada (Vista Externa)}
+    \label{fig:controle_final}
+    \includegraphics[width=0.6\textwidth]{../../Fotos carro/Foto do controle fechado.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+\section{Integração Eletrônica e Sistema de Tração}
+
+A Figura \ref{fig:interna_carro} ilustra o arranjo dos componentes eletrônicos no veículo. O Raspberry Pi Pico coordena as operações, recebendo comandos via RF e controlando o driver de potência L298N para a movimentação dos motores.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Arranjo da Eletrônica de Controle no Veículo}
+    \label{fig:interna_carro}
+    \includegraphics[width=0.7\textwidth]{../../Fotos carro/Foto do carro com a eletronica aberta.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+O sistema de tração 4WD (Figura \ref{fig:vista_inferior}) utiliza quatro motores DC com redução, permitindo que o veículo supere pequenos obstáculos e execute manobras diferenciais. A fiação foi organizada para evitar interferências mecânicas com os eixos das rodas.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Sistema de Tração 4WD e Motores DC}
+    \label{fig:vista_inferior}
+    \includegraphics[width=0.6\textwidth]{../../Fotos carro/Foto do carro parte de baixo com motores.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
+
+\section{Análise de Desempenho}
+
+Os testes de campo validaram a eficiência da comunicação bidirecional. A latência percebida foi mínima, permitindo uma resposta imediata aos comandos de direção. O sistema de segurança \textit{failsafe} atuou corretamente durante simulações de perda de sinal, interrompendo imediatamente a propulsão do veículo.
 
 \chapter{Conclusão}
 
-O projeto atingiu os objetivos. A integração NRF24L01/RP2040 permitiu uma teleoperação robusta e segura.
+O projeto do carro de bombeiro teleoprado foi concluído com sucesso, atingindo todos os requisitos funcionais estabelecidos inicialmente. A integração entre o microcontrolador Raspberry Pi Pico e o módulo NRF24L01 mostrou-se uma solução robusta para comunicação sem fio de baixa latência, permitindo um controle preciso mesmo em ambientes com interferência.
+
+A implementação do algoritmo de controle \textit{tank drive} possibilitou uma movimentação ágil e manobrável, essencial para o propósito de um veículo de intervenção. O sistema de combate a incêndio, composto pela bomba d'água e monitoramento de nível, funcionou conforme o esperado, agregando valor técnico ao protótipo através da integração de diferentes tipos de atuadores e sensores.
+
+O desenvolvimento deste trabalho permitiu a consolidação de conhecimentos fundamentais em sistemas embarcados, incluindo programação em MicroPython, protocolos de comunicação (SPI e I2C), controle de potência com PWM e design de hardware. A experiência de projetar, montar e validar um sistema completo preparou a equipe para desafios mais complexos na área de robótica e eletrônica.
+
+Como sugestões para trabalhos futuros, destaca-se a implementação de um sistema de controle de bocal automatizado via servomotores e a integração de sensores de chama para permitir modos de operação autônomos.
 
 \postextual
 
@@ -371,6 +450,17 @@ O projeto atingiu os objetivos. A integração NRF24L01/RP2040 permitiu uma tele
 
 \chapter{Código Fonte do Transmissor}
 \lstinputlisting[language=Python]{../../src/controle/controle.py}
+
+\chapter{Modificação Técnica da Bomba d'Água}
+A Figura \ref{fig:mod_bomba} detalha a alteração realizada no circuito de acionamento da bomba d'água para permitir o controle via transistor, garantindo o acionamento adequado a partir do sinal de controle do microcontrolador.
+
+\begin{figure}[htb]
+    \centering
+    \caption{Esquema da Modificação da Bomba d'Água}
+    \label{fig:mod_bomba}
+    \includegraphics[width=0.8\textwidth]{../../Esquemas elétricos/Carro/Mudança tecnica bomba d'agua.jpeg}
+    \legend{Fonte: Os autores (2026)}
+\end{figure}
 
 \end{apendicesenv}
 
